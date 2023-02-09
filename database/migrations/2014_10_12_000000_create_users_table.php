@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
+            $table->string('role')->default("user"); //Para definir a que proyecto pertenece y que rol tiene
         });
     }
 

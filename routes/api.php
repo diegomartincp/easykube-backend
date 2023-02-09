@@ -35,4 +35,8 @@ Route::controller(TodoController::class)->group(function () {
     Route::get('todo/{id}', 'show');
     Route::put('todo/{id}', 'update');
     Route::delete('todo/{id}', 'destroy');
+
+    Route::get('test', 'test_roles');
 });
+
+//Route::get('todoexample/todos', 'uses' => 'UsersController@profile', 'as' => 'users.profile']);
