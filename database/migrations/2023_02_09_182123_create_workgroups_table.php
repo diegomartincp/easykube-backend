@@ -13,16 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('workgroups', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email')->unique();
-            //$table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            //$table->rememberToken();
             $table->timestamps();
             $table->boolean('admin')->default("0"); //Para definir a que proyecto pertenece y que rol tiene
-            $table->integer('workgroup_id')->default("0")->references('id')->on('workgroups');
+            $table->integer('workgroup_id')->default("0");
         });
     }
 
@@ -33,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('workgroups');
     }
 };

@@ -1,0 +1,5 @@
+Para resetear la BBDD
+php artisan migrate:refresh
+
+Crear tabla de BBDD
+php artisan make:migration create_posts_table
