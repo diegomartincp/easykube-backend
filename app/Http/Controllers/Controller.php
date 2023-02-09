@@ -19,4 +19,18 @@ class Controller extends BaseController
         $query = DB::table('invitation_codes')->where('code', $request->code)->first();
         return $query;
     }
+
+    public function existe_usuario(Request $request)
+    {
+        $query = DB::table('users')->where('email', $request->email)->first();
+        if(!empty($query)){
+            return response()->json([
+                'Exists' => 'True',
+            ]);
+        }else{
+            return response()->json([
+                'Exists' => 'False',
+            ]);
+        }
+    }
 }

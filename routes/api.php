@@ -32,6 +32,7 @@ Route::controller(AuthController::class)->group(function () {
 
 Route::controller(Controller::class)->group(function () {
     Route::post('validate_code', 'validate_code');
+    Route::post('user_exists', 'existe_usuario');
 });
 
 Route::controller(TodoController::class)->group(function () {
