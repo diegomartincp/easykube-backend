@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController; //Para autenticar
 use App\Http\Controllers\TodoController; //Para el ejemplo de TODO
+use App\Http\Controllers\Controller; //Para el ejemplo de TODO
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -27,6 +28,10 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('logout', 'logout');
     Route::post('refresh', 'refresh');
 
+});
+
+Route::controller(Controller::class)->group(function () {
+    Route::post('validate_code', 'validate_code');
 });
 
 Route::controller(TodoController::class)->group(function () {
