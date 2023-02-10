@@ -3,8 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController; //Para autenticar
-use App\Http\Controllers\TodoController; //Para el ejemplo de TODO
-use App\Http\Controllers\Controller; //Para el ejemplo de TODO
+use App\Http\Controllers\TodoController; 
+use App\Http\Controllers\Controller; 
+use App\Http\Controllers\loggedController; 
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -33,6 +34,10 @@ Route::controller(AuthController::class)->group(function () {
 Route::controller(Controller::class)->group(function () {
     Route::post('validate_code', 'validate_code');
     Route::post('user_exists', 'existe_usuario');
+});
+
+Route::controller(loggedController::class)->group(function () {
+    Route::post('is_admin', 'is_admin');
 });
 
 Route::controller(TodoController::class)->group(function () {
