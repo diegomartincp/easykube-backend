@@ -25,6 +25,5 @@ class loggedController extends Controller
                 'is_admin' => 'False',
             ]);
         }
-
     }
 }

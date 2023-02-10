@@ -37,7 +37,7 @@ Route::controller(Controller::class)->group(function () {
 });
 
 Route::controller(loggedController::class)->group(function () {
-    Route::post('is_admin', 'is_admin');
+    Route::get('is_admin', 'is_admin');
 });
 
 Route::controller(TodoController::class)->group(function () {
@@ -48,6 +48,7 @@ Route::controller(TodoController::class)->group(function () {
     Route::delete('todo/{id}', 'destroy');
 
     Route::get('test', 'test_roles');
+    Route::post('ejemplo', 'ejemplo');
 });
 
 //Route::get('todoexample/todos', 'uses' => 'UsersController@profile', 'as' => 'users.profile']);
