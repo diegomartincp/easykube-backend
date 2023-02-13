@@ -38,6 +38,7 @@ Route::controller(Controller::class)->group(function () {
 
 Route::controller(loggedController::class)->group(function () {
     Route::get('is_admin', 'is_admin');
+    Route::get('get_user', 'get_user');
 });
 
 Route::controller(TodoController::class)->group(function () {

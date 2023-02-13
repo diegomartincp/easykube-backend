@@ -26,4 +26,11 @@ class loggedController extends Controller
             ]);
         }
     }
+    public function get_user(Request $request)
+    {
+        $user = auth('api')->user();
+        return response()->json([
+            'user' => $user,
+        ]);
+    }
 }
