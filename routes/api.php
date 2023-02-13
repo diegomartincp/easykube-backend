@@ -41,6 +41,7 @@ Route::controller(loggedController::class)->group(function () {
     Route::get('get_user', 'get_user');
     Route::post('create_web_project', 'create_web_project');
     Route::post('update_password', 'update_password');
+    Route::get('get_workgroup', 'get_workgroup');
 });
 
 Route::controller(TodoController::class)->group(function () {

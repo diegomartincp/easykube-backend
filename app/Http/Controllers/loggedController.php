@@ -35,6 +35,13 @@ class loggedController extends Controller
         ]);
     }
 
+    public function get_workgroup(Request $request)
+    {
+        $user = auth('api')->user();
+        $query = DB::table('workgroups')->where('id', $user->workgroup_id)->first();
+        return $query;
+    }
+
     public function create_web_project(Request $request){
         /*$request->validate([
             'name' => 'required|string',
