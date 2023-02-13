@@ -3,3 +3,6 @@ php artisan migrate:refresh
 
 Crear tabla de BBDD
 php artisan make:migration create_posts_table
+
+Crear controlador
+php artisan make:controller ProvisionServer
