@@ -25,11 +25,11 @@ class Controller extends BaseController
         $query = DB::table('users')->where('email', $request->email)->first();
         if(!empty($query)){
             return response()->json([
-                'Exists' => 'True',
+                'Exists' => true,
             ]);
         }else{
             return response()->json([
-                'Exists' => 'False',
+                'Exists' => false,
             ]);
         }
     }
