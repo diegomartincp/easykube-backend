@@ -33,4 +33,31 @@ class loggedController extends Controller
             'user' => $user,
         ]);
     }
+
+    public function create_web_project(Request $request){
+        /*$request->validate([
+            'name' => 'required|string',
+            'description' => 'required|string',
+            'production' => 'required|boolean',
+            'deployment' => 'required|integer',
+            'port' => 'required|integer',
+            'replicas' => 'required|integer',
+            'url' => 'required|string',
+            'workgroup_id' => 'required|integer',
+        ]);*/
+        $user = auth('api')->user();
+        DB::table('projects')->insert([
+            'name' => $request->name,
+            'description' => $request->description,
+            'production' => $request->production,
+            'deployment' => $request->deployment,
+            'port' => $request->port,
+            'replicas' => $request->replicas,
+            'url' => $request->url,
+            'workgroup_id' => $user->workgroup_id,
+        ]);
+        return response()->json([
+            'Status' => "success",
+        ]);
+    }
 }

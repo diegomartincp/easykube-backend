@@ -16,6 +16,12 @@ return new class extends Migration
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('description');
+            $table->boolean('production');
+            $table->integer('deployment');
+            $table->integer('port');
+            $table->integer('replicas');
+            $table->string('url');
             $table->integer('workgroup_id')->references('id')->on('workgroups');
             $table->timestamps();
         });

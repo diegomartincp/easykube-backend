@@ -3,9 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController; //Para autenticar
-use App\Http\Controllers\TodoController; 
-use App\Http\Controllers\Controller; 
-use App\Http\Controllers\loggedController; 
+use App\Http\Controllers\TodoController;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\loggedController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -39,6 +39,7 @@ Route::controller(Controller::class)->group(function () {
 Route::controller(loggedController::class)->group(function () {
     Route::get('is_admin', 'is_admin');
     Route::get('get_user', 'get_user');
+    Route::post('create_web_project', 'create_web_project');
 });
 
 Route::controller(TodoController::class)->group(function () {
@@ -51,5 +52,3 @@ Route::controller(TodoController::class)->group(function () {
     Route::get('test', 'test_roles');
     Route::post('ejemplo', 'ejemplo');
 });
-
-//Route::get('todoexample/todos', 'uses' => 'UsersController@profile', 'as' => 'users.profile']);

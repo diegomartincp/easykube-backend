@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('name');
             $table->timestamps();
             $table->boolean('admin')->default("0"); //Para definir a que proyecto pertenece y que rol tiene
-            $table->integer('workgroup_id')->default("0");
         });
     }
 
