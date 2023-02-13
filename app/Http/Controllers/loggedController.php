@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class loggedController extends Controller
 {
@@ -60,4 +61,32 @@ class loggedController extends Controller
             'Status' => "success",
         ]);
     }
+
+    //Change password
+    public function update_password(Request $request)
+{
+        # Validation
+        $request->validate([
+            'old_password' => 'required',
+            'new_password' => 'required',
+        ]);
+
+        #Match The Old Password
+        if(!Hash::check($request->old_password, auth()->user()->password)){
+            return response()->json([
+                'error' => "Old Password Doesn't match!",
+            ]);
+        }
+
+        #Update the new Password
+        DB::table('users')->whereId(auth()->user()->id)->update([
+            'password' => Hash::make($request->new_password)
+        ]);
+        return response()->json([
+            'status' => "success",
+        ]);
+}
+
+
+
 }

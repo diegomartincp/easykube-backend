@@ -40,6 +40,7 @@ Route::controller(loggedController::class)->group(function () {
     Route::get('is_admin', 'is_admin');
     Route::get('get_user', 'get_user');
     Route::post('create_web_project', 'create_web_project');
+    Route::post('update_password', 'update_password');
 });
 
 Route::controller(TodoController::class)->group(function () {
