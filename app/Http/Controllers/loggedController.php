@@ -43,7 +43,7 @@ class loggedController extends Controller
     }
 
     public function create_web_project(Request $request){
-        /*$request->validate([
+        $request->validate([
             'name' => 'required|string',
             'description' => 'required|string',
             'production' => 'required|boolean',
@@ -52,7 +52,7 @@ class loggedController extends Controller
             'replicas' => 'required|integer',
             'url' => 'required|string',
             'workgroup_id' => 'required|integer',
-        ]);*/
+        ]);
         $user = auth('api')->user();
         DB::table('projects')->insert([
             'name' => $request->name,
@@ -64,6 +64,12 @@ class loggedController extends Controller
             'url' => $request->url,
             'workgroup_id' => $user->workgroup_id,
         ]);
+        //Guardar el log del proyecto creado
+        DB::table('logs')->insert([
+            'description' => "Created new web project '".$request->name."'",
+            'user_id' => $user->id,
+        ]);
+
         return response()->json([
             'Status' => "success",
         ]);
