@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -43,16 +44,16 @@ class loggedController extends Controller
     }
 
     public function create_web_project(Request $request){
-        $request->validate([
+        /*$request->validate([
             'name' => 'required|string',
             'description' => 'required|string',
-            'production' => 'required|boolean',
-            'deployment' => 'required|integer',
-            'port' => 'required|integer',
-            'replicas' => 'required|integer',
+            'production' => 'required|',
+            'deployment' => 'required|',
+            'port' => 'required|',
+            'replicas' => 'required|',
             'url' => 'required|string',
-            'workgroup_id' => 'required|integer',
-        ]);
+            'workgroup_id' => 'required|',
+        ]);*/
         $user = auth('api')->user();
         DB::table('projects')->insert([
             'name' => $request->name,
@@ -66,9 +67,9 @@ class loggedController extends Controller
         ]);
 
         //Guardar el log del proyecto creado
-        DB::table('logs')->insert([
-            'description' => "Created new web project '".$request->name."'",
+        $log = log::create([
             'user_id' => $user->id,
+            'description' => "Created new web project '".$request->name."'",
         ]);
 
         return response()->json([
@@ -78,7 +79,7 @@ class loggedController extends Controller
 
     //Change password
     public function update_password(Request $request)
-{
+    {
         # Validation
         $request->validate([
             'old_password' => 'required',
@@ -99,15 +100,23 @@ class loggedController extends Controller
 
         //Guardar el log del proyecto creado
         $user = auth('api')->user();
-        DB::table('logs')->insert([
-            'description' => "Updated password",
+        $log = log::create([
             'user_id' => $user->id,
+            'description' => "Updated password",
         ]);
         return response()->json([
             'status' => "success",
         ]);
 }
 
+    //devolver todos los logs del usuario que hace la petición
+    public function get_logs()
+    {
+        $user = auth('api')->user();
+        $query = DB::table('logs')->where('user_id', $user->id)->orderBy('created_at','desc')->get();
+        //$query = DB::table('workgroups')->where('id', '1')->first();
+        return $query;
 
+    }
 
 }

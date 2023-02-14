@@ -42,6 +42,7 @@ Route::controller(loggedController::class)->group(function () {
     Route::post('create_web_project', 'create_web_project');
     Route::post('update_password', 'update_password');
     Route::get('get_workgroup', 'get_workgroup');
+    Route::get('get_logs', 'get_logs');
 });
 
 Route::controller(TodoController::class)->group(function () {
