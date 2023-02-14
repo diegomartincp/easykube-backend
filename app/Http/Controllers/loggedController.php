@@ -128,4 +128,19 @@ class loggedController extends Controller
         }
     }
 
+        //devolver todos los usuarios si es admin
+        public function get_all_users()
+        {
+            $user = auth('api')->user();
+            if($user->admin==1){
+                $query = DB::table('users')->get();
+                return $query;
+            }
+            else{
+                return response()->json([
+                    'forbidden',
+                ]);
+            }
+        }
+
 }
