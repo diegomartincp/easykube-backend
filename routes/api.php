@@ -45,6 +45,7 @@ Route::controller(loggedController::class)->group(function () {
     Route::get('get_logs', 'get_logs');
     Route::get('get_all_logs', 'get_all_logs');
     Route::get('get_all_users', 'get_all_users');
+    Route::post('generate_code', 'generate_code');
 });
 
 Route::controller(TodoController::class)->group(function () {

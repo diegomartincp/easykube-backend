@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\invitation_code;
 use App\Models\log;
 use App\Models\project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class loggedController extends Controller
 {
@@ -135,6 +137,24 @@ class loggedController extends Controller
             if($user->admin==1){
                 $query = DB::table('users')->get();
                 return $query;
+            }
+            else{
+                return response()->json([
+                    'forbidden',
+                ]);
+            }
+        }
+        //generar código de invitación
+        public function generate_code()
+        {
+            $user = auth('api')->user();
+            if($user->admin==1){
+                $randomString = Str::random(15);
+                $code = invitation_code::create([
+                    'code' => $randomString,
+                    'workgroup_id' => $user->workgroup_id,
+                ]);
+                return $code;
             }
             else{
                 return response()->json([
