@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\log;
+use App\Models\project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -44,18 +45,8 @@ class loggedController extends Controller
     }
 
     public function create_web_project(Request $request){
-        /*$request->validate([
-            'name' => 'required|string',
-            'description' => 'required|string',
-            'production' => 'required|',
-            'deployment' => 'required|',
-            'port' => 'required|',
-            'replicas' => 'required|',
-            'url' => 'required|string',
-            'workgroup_id' => 'required|',
-        ]);*/
         $user = auth('api')->user();
-        DB::table('projects')->insert([
+        project::create([
             'name' => $request->name,
             'description' => $request->description,
             'production' => $request->production,
