@@ -110,4 +110,22 @@ class loggedController extends Controller
 
     }
 
+    //devolver todos los logs del usuario que hace la petición
+    public function get_all_logs()
+    {
+        $user = auth('api')->user();
+        if($user->admin==1){
+            $query = DB::table('logs')
+            ->join('users', 'logs.user_id', '=', 'users.id')
+            ->select('logs.*', 'users.name')
+            ->orderBy('created_at','desc')->get();
+            return $query;
+        }
+        else{
+            return response()->json([
+                'forbidden',
+            ]);
+        }
+    }
+
 }
