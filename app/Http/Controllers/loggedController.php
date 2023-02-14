@@ -64,6 +64,7 @@ class loggedController extends Controller
             'url' => $request->url,
             'workgroup_id' => $user->workgroup_id,
         ]);
+
         //Guardar el log del proyecto creado
         DB::table('logs')->insert([
             'description' => "Created new web project '".$request->name."'",
@@ -94,6 +95,13 @@ class loggedController extends Controller
         #Update the new Password
         DB::table('users')->whereId(auth()->user()->id)->update([
             'password' => Hash::make($request->new_password)
+        ]);
+
+        //Guardar el log del proyecto creado
+        $user = auth('api')->user();
+        DB::table('logs')->insert([
+            'description' => "Updated password",
+            'user_id' => $user->id,
         ]);
         return response()->json([
             'status' => "success",
