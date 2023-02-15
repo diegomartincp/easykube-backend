@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
+use Session;
+
 class AuthController extends Controller
 {
 
@@ -89,6 +91,19 @@ class AuthController extends Controller
                 'type' => 'bearer',
             ]
         ]);
+    }
+    public function session_exists(){
+        if ($user = auth('api')->user()){
+            // do some thing if the key is exist
+            return response()->json([
+                'exists' => 'true',
+            ]);
+          }else{
+            //the key does not exist in the session
+            return response()->json([
+                'exists' => 'false',
+            ]);
+          }
     }
 
 }
