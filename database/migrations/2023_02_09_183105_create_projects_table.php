@@ -22,6 +22,7 @@ return new class extends Migration
             $table->integer('port');
             $table->integer('replicas');
             $table->string('url');
+            $table->boolean('validado')->default("0");
             $table->integer('workgroup_id')->references('id')->on('workgroups');
             $table->timestamps();
         });

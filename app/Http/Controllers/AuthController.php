@@ -59,6 +59,13 @@ class AuthController extends Controller
             'workgroup_id'=> $request->workgroup_id,
 
         ]);
+        //Si no está validado no puedes hacer login
+        if(!$user->validado==1){
+            return response()->json([
+                'Validated' => 'false',
+                ]
+            );
+        }
 
         $token = Auth::login($user);
         return response()->json([

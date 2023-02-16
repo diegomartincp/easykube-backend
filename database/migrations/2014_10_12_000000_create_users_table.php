@@ -22,6 +22,7 @@ return new class extends Migration
             //$table->rememberToken();
             $table->timestamps();
             $table->boolean('admin')->default("0"); //Para definir a que proyecto pertenece y que rol tiene
+            $table->boolean('validado')->default("0");
             $table->integer('workgroup_id')->references('id')->on('workgroups');
         });
     }
