@@ -167,6 +167,25 @@ class loggedController extends Controller
                 ]);
             }
         }
+
+        //devolver todos los usuarios si es admin
+        public function get_not_validated_users()
+        {
+            $user = auth('api')->user();
+            if($user->admin==1){
+                $query = DB::table('users')
+                ->select('name', 'email', 'id', 'validado')
+                ->where('validado', false)
+                ->get();
+                return $query;
+            }
+            else{
+                return response()->json([
+                    'forbidden',
+                ]);
+            }
+        }
+
         //Validar usuario por admins
         public function validate_user(Request $request)
         {

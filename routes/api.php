@@ -47,6 +47,8 @@ Route::controller(loggedController::class)->group(function () {
     Route::get('get_all_logs', 'get_all_logs');
     Route::get('get_all_users', 'get_all_users');
     Route::get('generate_code', 'generate_code');
+    Route::post('validate_user', 'validate_user');
+    Route::get('get_not_validated_users', 'get_not_validated_users');
 });
 
 Route::controller(TodoController::class)->group(function () {
