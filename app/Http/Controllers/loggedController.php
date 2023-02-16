@@ -150,6 +150,11 @@ class loggedController extends Controller
             $user = auth('api')->user();
             if($user->admin==1){
                 $randomString = Str::random(15);
+                //Guardar el log
+                log::create([
+                    'user_id' => $user->id,
+                    'description' => "Created new invitation code ".$randomString,
+                ]);
                 $code = invitation_code::create([
                     'code' => $randomString,
                     'workgroup_id' => $user->workgroup_id,

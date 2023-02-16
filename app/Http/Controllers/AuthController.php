@@ -68,6 +68,11 @@ class AuthController extends Controller
             'workgroup_id'=> $request->workgroup_id,
 
         ]);
+        //Guardar el log
+        log::create([
+            'user_id' => $user->id,
+            'description' => "Applyed for registration",
+        ]);
         return response()->json([
             'status' => 'success',
             'message' => 'User created successfully',
