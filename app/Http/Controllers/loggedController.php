@@ -167,5 +167,32 @@ class loggedController extends Controller
                 ]);
             }
         }
+        //Validar usuario por admins
+        public function validate_user(Request $request)
+        {
+        $user = auth('api')->user();
+        if($user->admin==1){
+
+            //Guardar el log
+            log::create([
+                'user_id' => $user->id,
+                'description' => "Validated user ".$request->user_id,
+            ]);
+
+            //Validar
+            DB::table('users')
+            ->where('id', $request->user_id)
+            ->update(['validado' => true]);
+
+            return response()->json([
+                'ok',
+            ]);
+        }
+        else{
+            return response()->json([
+                'forbidden',
+            ]);
+        }
+        }
 
 }
