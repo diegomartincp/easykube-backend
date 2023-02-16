@@ -33,6 +33,15 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
+
+        //Si no está validado no puedes hacer login
+        if(!$user->validado==1){
+            return response()->json([
+                'validated' => false,
+                ]
+            );
+        }
+
         return response()->json([
                 'status' => 'success',
                 'user' => $user,
@@ -59,10 +68,18 @@ class AuthController extends Controller
             'workgroup_id'=> $request->workgroup_id,
 
         ]);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'User created successfully',
+        ]);
+
+        //El registro ya no hace login, hay que validarlo por el admin
+
+        /*
         //Si no está validado no puedes hacer login
         if(!$user->validado==1){
             return response()->json([
-                'Validated' => 'false',
+                'validated' => false,
                 ]
             );
         }
@@ -77,6 +94,7 @@ class AuthController extends Controller
                 'type' => 'bearer',
             ]
         ]);
+        */
     }
 
     public function logout()
