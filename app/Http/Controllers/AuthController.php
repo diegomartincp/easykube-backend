@@ -54,29 +54,37 @@ class AuthController extends Controller
     }
 
     public function register(Request $request){
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6',
-            'workgroup_id' => 'required|integer' //Necesitamos que haya workgroup
-        ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'workgroup_id'=> $request->workgroup_id,
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => 'required|string|min:6',
+                'workgroup_id' => 'required|integer' //Necesitamos que haya workgroup
+            ]);
 
-        ]);
-        //Guardar el log
-        log::create([
-            'user_id' => $user->id,
-            'description' => "Applyed for registration",
-        ]);
-        return response()->json([
-            'status' => 'success',
-            'message' => 'User created successfully',
-        ]);
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'workgroup_id'=> $request->workgroup_id,
+
+            ]);
+            //Guardar el log
+            log::create([
+                'user_id' => $user->id,
+                'description' => "Applyed for registration",
+            ]);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User created successfully',
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'Unable to register',
+            ]);
+        }
+
 
         //El registro ya no hace login, hay que validarlo por el admin
 
