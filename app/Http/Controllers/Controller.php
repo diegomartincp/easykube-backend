@@ -26,6 +26,7 @@ class Controller extends BaseController
 
     }
 
+    //NO SE UTILIZA
     public function existe_usuario(Request $request)
     {
         $query = DB::table('users')->where('email', $request->email)->first();
