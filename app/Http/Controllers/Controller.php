@@ -17,7 +17,13 @@ class Controller extends BaseController
     public function validate_code(Request $request)
     {
         $query = DB::table('invitation_codes')->where('code', $request->code)->first();
-        return $query;
+        if($query)return $query;
+        else{
+            return response()->json([
+                'error' => 'Code not valid',
+            ]);
+        }
+
     }
 
     public function existe_usuario(Request $request)
