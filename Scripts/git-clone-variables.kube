@@ -2,24 +2,24 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    run: miejemplo
-  name: miejemplo
+    run: {{name}}
+  name: {{name}}
 spec:
   containers:
   - image: nginx
-    name: miejemplo
+    name: {{name}}
     ports:
-    - containerPort: 801
+    - containerPort: {{port}}
     volumeMounts:
-    - mountPath: /usr/share/nginx/html
+    - mountPath: "/usr/share/nginx/html"
       name: www-data
   initContainers:
   - name: git-cloner
     image: alpine/git
     args:
-    - clone
-    - https://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@github.com/diegomartincp/webpage_private_example.git
-    - /data
+        - clone
+        - https://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@github.com/diegomartincp/webpage_private_example.git
+        - /data
     volumeMounts:
     - mountPath: /data
       name: www-data
