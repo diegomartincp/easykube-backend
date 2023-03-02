@@ -1,7 +1,7 @@
 import ruamel.yaml
 import json
 
-in_file = 'create-namespace.yaml'
+in_file = 'Scripts-old/temp.yaml'
 out_file = 'output.json'
 
 yaml = ruamel.yaml.YAML(typ='safe')

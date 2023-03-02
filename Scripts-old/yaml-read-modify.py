@@ -1,7 +1,6 @@
 """
-Este script abre un ficher .kube y lo modifica de acuerdo a los parámetros
+Este script abre un fichero .kube y lo modifica de acuerdo a los parámetros
 """
-
 
 import ruamel.yaml
 import json
