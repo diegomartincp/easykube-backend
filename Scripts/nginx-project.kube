@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{name}}-deployment
+  labels:
+    app: {{name}}-deployment
+spec:
+  selector:
+    matchLabels:
+      app: {{name}}-deployment
+  replicas: 4
+  template:
+    metadata:
+      labels:
+        app: {{name}}-deployment
+    spec:
+      #CONTENEDORE CON NGINX
+      containers:
+      - image: nginx
+        name: nginx-git-cloned
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: "/usr/share/nginx/html"
+          name: www-data
+      #CONTENEDORE CON EL GIT-CLONER
+      initContainers:
+      - name: git-cloner
+        image: alpine/git
+        args:
+            - clone
+            - {{token-url}}
+            - /data
+        volumeMounts:
+        - mountPath: /data
+          name: www-data
+      volumes:
+      - name: www-data
+        emptyDir: {}
+---
+#Servicio para acceder a NGINX
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{name}}-service
+spec:
+  selector:
+    app: {{name}}
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80

@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-git-deployment
+  name: ejemplo-deployment
   labels:
-    app: nginx-git
+    app: ejemplo-deployment
 spec:
   selector:
     matchLabels:
-      app: nginx-git
+      app: ejemplo-deployment
   replicas: 4
   template:
     metadata:
       labels:
-        app: nginx-git
+        app: ejemplo-deployment
     spec:
       #CONTENEDORE CON NGINX
       containers:
@@ -29,7 +29,7 @@ spec:
         image: alpine/git
         args:
             - clone
-            - https://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@github.com/diegomartincp/webpage_private_example.git
+            - https://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@github.com/diegomartincp/easykube-backend.git
             - /data
         volumeMounts:
         - mountPath: /data
@@ -42,10 +42,10 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: nginx-git-svc
+  name: ejemplo-service
 spec:
   selector:
-    app: nginx-git
+    app: ejemplo
   ports:
   - protocol: TCP
     port: 80
