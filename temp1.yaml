@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{name}}-deployment
+  name: miapp-deployment
   namespace: default
   labels:
-    app: {{name}}
+    app: miapp
 spec:
   selector:
     matchLabels:
-      app: {{name}}
+      app: miapp
   replicas: 4
   template:
     metadata:
       labels:
-        app: {{name}}
+        app: miapp
     spec:
       #CONTENEDORE CON NGINX
       containers:
@@ -30,7 +30,7 @@ spec:
         image: alpine/git
         args:
             - clone
-            - {{token-url}}
+            - https://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@github.com/diegomartincp/webpage_private_example.git
             - /data
         volumeMounts:
         - mountPath: /data

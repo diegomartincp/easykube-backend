@@ -2,11 +2,11 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: {{name}}-service
+  name: miapp-service
   namespace: default
 spec:
   selector:
-    app: {{name}}
+    app: miapp
   ports:
   - protocol: TCP
     port: 80
