@@ -1,0 +1,14 @@
+#Servicio para acceder a NGINX
+apiVersion: apps/v1
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{name}}-service
+  namespace: default
+spec:
+  selector:
+    app: {{name}}
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80

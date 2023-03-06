@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{name}}-deployment
+  namespace: default
   labels:
     app: {{name}}-deployment
 spec:
@@ -37,16 +38,3 @@ spec:
       volumes:
       - name: www-data
         emptyDir: {}
----
-#Servicio para acceder a NGINX
-kind: Service
-apiVersion: v1
-metadata:
-  name: {{name}}-service
-spec:
-  selector:
-    app: {{name}}
-  ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 80

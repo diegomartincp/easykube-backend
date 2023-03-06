@@ -37,7 +37,7 @@ with open('temp.yaml', 'w') as f:
 
 
 with open('temp.yaml', 'rb') as f:
-    r = requests.get("http://"+url_ek_controlplane+":5000/test", files={"file": f})
+    r = requests.get("http://"+url_ek_controlplane+":5000/apply", files={"file": f})
     print(r.content)
 os.remove('temp.yaml')
 
