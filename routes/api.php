@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\kubernetesController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController; //Para autenticar
-use App\Http\Controllers\TodoController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\loggedController;
 /*
@@ -21,7 +21,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-//Añado desde aquí
+
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('login', 'login');
@@ -29,7 +29,6 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('logout', 'logout');
     //Route::post('refresh', 'refresh');
     //Route::post('session_exists', 'session_exists');
-
 });
 
 Route::controller(Controller::class)->group(function () {
@@ -51,13 +50,6 @@ Route::controller(loggedController::class)->group(function () {
     Route::get('get_not_validated_users', 'get_not_validated_users');
 });
 
-Route::controller(TodoController::class)->group(function () {
-    Route::get('todos', 'index');
-    Route::post('todo', 'store');
-    Route::get('todo/{id}', 'show');
-    Route::put('todo/{id}', 'update');
-    Route::delete('todo/{id}', 'destroy');
-
-    Route::get('test', 'test_roles');
-    Route::post('ejemplo', 'ejemplo');
+Route::controller(kubernetesController::class)->group(function () {
+    Route::get('add_cluster', 'add_cluster');
 });

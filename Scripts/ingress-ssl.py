@@ -14,9 +14,9 @@ in_file = 'Scripts/ingress-ssl.kube'
 #dominio = sys.argv[4]
 
 url_ek_controlplane="34.123.158.74"
-name="aplica"
-ipname="web-ip"
-dominio="diegoaw.ddns.net"
+name="awebo"
+ipname="awebo"
+dominio="awebo.ddns.net"
 
 
 # Abrir el archivo original para lectura

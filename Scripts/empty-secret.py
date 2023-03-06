@@ -12,7 +12,7 @@ in_file = 'Scripts/empty-secret.kube'
 #name = sys.argv[2]
 
 url_ek_controlplane="34.123.158.74"
-name="aplica"
+name="awebo"
 
 
 
