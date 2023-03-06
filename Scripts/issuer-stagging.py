@@ -14,7 +14,7 @@ in_file = 'Scripts/issuer-lets-encrypt-staging.kube'
 #ingress = sys.argv[4]
 url_ek_controlplane="192.168.1.62"
 email="ejemplo@gmail.com"
-env="staging-xd"
+name="ejemplo"
 appname="app-name"
 
 
@@ -26,7 +26,7 @@ with open(in_file, 'r') as f:
 
 # Reemplazar la palabra deseada
 contenido = contenido.replace("{{email}}", email)
-contenido = contenido.replace("{{env}}", env)
+contenido = contenido.replace("{{name}}", name)
 contenido = contenido.replace("{{ingress}}", appname+"-ingress")
 
 # Abrir el archivo de destino para escritura

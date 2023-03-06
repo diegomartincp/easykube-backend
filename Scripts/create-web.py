@@ -1,5 +1,5 @@
 """
-Este script abre un fichero .kube y lo modifica de acuerdo a los parámetros
+Este script abre un fichero .kube y lo modifica de acuerdo a los parámetros para crear un deployment de un proyecto web personalizado
 """
 
 import os

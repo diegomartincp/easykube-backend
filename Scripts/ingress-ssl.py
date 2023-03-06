@@ -4,19 +4,19 @@ Este script abre un fichero .kube y lo modifica de acuerdo a los parámetros
 
 import os
 import requests
-in_file = 'Scripts/issuer-lets-encrypt-prod.kube'
+in_file = 'Scripts/ingress-ssl.kube'
 
 
 
 #url_ek_controlplane = sys.argv[1]
-#email = sys.argv[2]
-#env = sys.argv[3]
-#ingress = sys.argv[4]
-url_ek_controlplane="192.168.1.62"
-email="ejemplo@gmail.com"
-name="ejemplo"
-appname="app-name"
+#name = sys.argv[2]
+#ipname = sys.argv[3]
+#dominio = sys.argv[4]
 
+url_ek_controlplane="192.168.1.62"
+name="ejemplo"
+ipname="ipweb"
+dominio="dominio"
 
 
 # Abrir el archivo original para lectura
@@ -25,9 +25,10 @@ with open(in_file, 'r') as f:
     contenido = f.read()
 
 # Reemplazar la palabra deseada
-contenido = contenido.replace("{{email}}", email)
 contenido = contenido.replace("{{name}}", name)
-contenido = contenido.replace("{{ingress}}", appname+"-ingress")
+contenido = contenido.replace("{{ipname}}", ipname)
+contenido = contenido.replace("{{dominio}}", dominio)
+
 
 # Abrir el archivo de destino para escritura
 with open('temp.yaml', 'w') as f:

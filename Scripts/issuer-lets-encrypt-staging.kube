@@ -2,14 +2,14 @@
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: letsencrypt-{{env}}
+  name: letsencrypt-{{name}}
   namespace: default
 spec:
   acme:
     server: https://acme-staging-v02.api.letsencrypt.org/directory
     email: {{email}}
     privateKeySecretRef:
-      name: letsencrypt-{{env}}
+      name: letsencrypt-{{name}}
     solvers:
     - http01:
         ingress:
