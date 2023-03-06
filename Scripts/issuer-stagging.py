@@ -14,7 +14,7 @@ in_file = 'Scripts/issuer-lets-encrypt-staging.kube'
 #ingress = sys.argv[4]
 url_ek_controlplane="192.168.1.62"
 email="ejemplo@gmail.com"
-name="ejemplo"
+name="ejemplo2a"
 
 
 

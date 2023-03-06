@@ -11,9 +11,9 @@ in_file = 'Scripts/empty-secret.kube'
 #url_ek_controlplane = sys.argv[1]
 #name = sys.argv[2]
 
-url_ek_controlplane="192.168.1.62"
-name="ejemplo"
-secreto=name+"-secret"
+url_ek_controlplane="34.123.158.74"
+name="aplica"
+
 
 
 # Abrir el archivo original para lectura
@@ -22,7 +22,7 @@ with open(in_file, 'r') as f:
     contenido = f.read()
 
 # Reemplazar la palabra deseada
-contenido = contenido.replace("{{secreto}}", secreto)
+contenido = contenido.replace("{{name}}", name)
 
 
 # Abrir el archivo de destino para escritura
@@ -32,7 +32,7 @@ with open('temp.yaml', 'w') as f:
 
 
 with open('temp.yaml', 'rb') as f:
-    r = requests.get("http://"+url_ek_controlplane+":5000/test", files={"file": f})
+    r = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
     print(r.content)
 os.remove('temp.yaml')
 

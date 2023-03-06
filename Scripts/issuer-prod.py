@@ -12,9 +12,9 @@ in_file = 'Scripts/issuer-lets-encrypt-prod.kube'
 #email = sys.argv[2]
 #env = sys.argv[3]
 #ingress = sys.argv[4]
-url_ek_controlplane="100.65.148.163"
+url_ek_controlplane="34.123.158.74"
 email="campos.martin.diego@gmail.com"
-name="ejemplo"
+name="aplica"
 
 
 
@@ -35,7 +35,7 @@ with open('temp.yaml', 'w') as f:
 
 
 with open('temp.yaml', 'rb') as f:
-    r = requests.get("http://"+url_ek_controlplane+":5000/apply", files={"file": f})
+    r = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
     print(r.content)
 os.remove('temp.yaml')
 

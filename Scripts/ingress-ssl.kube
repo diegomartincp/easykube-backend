@@ -3,6 +3,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{name}}-ingress
+  namespace: default
   annotations:
     # This tells Google Cloud to create an External Load Balancer to realize this Ingress
     kubernetes.io/ingress.class: gce
@@ -13,7 +14,7 @@ metadata:
     cert-manager.io/issuer: letsencrypt-{{name}}
 spec:
   tls:
-    - secretName: web-ssl
+    - secretName: {{name}}-secret
       hosts:
         - {{dominio}}
   defaultBackend:

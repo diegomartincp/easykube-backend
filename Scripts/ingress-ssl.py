@@ -13,10 +13,10 @@ in_file = 'Scripts/ingress-ssl.kube'
 #ipname = sys.argv[3]
 #dominio = sys.argv[4]
 
-url_ek_controlplane="192.168.1.62"
-name="ejemplo"
-ipname="ipweb"
-dominio="dominio"
+url_ek_controlplane="34.123.158.74"
+name="aplica"
+ipname="web-ip"
+dominio="diegoaw.ddns.net"
 
 
 # Abrir el archivo original para lectura
@@ -37,7 +37,7 @@ with open('temp.yaml', 'w') as f:
 
 
 with open('temp.yaml', 'rb') as f:
-    r = requests.get("http://"+url_ek_controlplane+":5000/apply", files={"file": f})
+    r = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
     print(r.content)
 os.remove('temp.yaml')
 
