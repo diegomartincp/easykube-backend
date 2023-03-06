@@ -1,52 +1,23 @@
-apiVersion: apps/v1
-kind: Deployment
+# ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: ejemplo-deployment
-  labels:
-    app: ejemplo-deployment
+  name: ejemplo-ingress
+  annotations:
+    # This tells Google Cloud to create an External Load Balancer to realize this Ingress
+    kubernetes.io/ingress.class: gce
+    # This enables HTTP connections from Internet clients
+    kubernetes.io/ingress.allow-http: "true"
+    # This tells Google Cloud to associate the External Load Balancer with the static IP which we created earlier
+    kubernetes.io/ingress.global-static-ip-name: ipweb
+    cert-manager.io/issuer: letsencrypt-ejemplo
 spec:
-  selector:
-    matchLabels:
-      app: ejemplo-deployment
-  replicas: 4
-  template:
-    metadata:
-      labels:
-        app: ejemplo-deployment
-    spec:
-      #CONTENEDORE CON NGINX
-      containers:
-      - image: nginx
-        name: nginx-git-cloned
-        ports:
-        - containerPort: 80
-        volumeMounts:
-        - mountPath: "/usr/share/nginx/html"
-          name: www-data
-      #CONTENEDORE CON EL GIT-CLONER
-      initContainers:
-      - name: git-cloner
-        image: alpine/git
-        args:
-            - clone
-            - https://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@github.com/diegomartincp/easykube-backend.git
-            - /data
-        volumeMounts:
-        - mountPath: /data
-          name: www-data
-      volumes:
-      - name: www-data
-        emptyDir: {}
----
-#Servicio para acceder a NGINX
-kind: Service
-apiVersion: v1
-metadata:
-  name: ejemplo-service
-spec:
-  selector:
-    app: ejemplo
-  ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 80
+  tls:
+    - secretName: web-ssl
+      hosts:
+        - dominio
+  defaultBackend:
+    service:
+      name: ejemplo-service
+      port:
+        number: 80

@@ -12,10 +12,9 @@ in_file = 'Scripts/issuer-lets-encrypt-prod.kube'
 #email = sys.argv[2]
 #env = sys.argv[3]
 #ingress = sys.argv[4]
-url_ek_controlplane="192.168.1.62"
-email="ejemplo@gmail.com"
+url_ek_controlplane="100.65.148.163"
+email="campos.martin.diego@gmail.com"
 name="ejemplo"
-appname="app-name"
 
 
 
@@ -27,7 +26,7 @@ with open(in_file, 'r') as f:
 # Reemplazar la palabra deseada
 contenido = contenido.replace("{{email}}", email)
 contenido = contenido.replace("{{name}}", name)
-contenido = contenido.replace("{{ingress}}", appname+"-ingress")
+contenido = contenido.replace("{{ingress}}", name+"-ingress")
 
 # Abrir el archivo de destino para escritura
 with open('temp.yaml', 'w') as f:

@@ -15,7 +15,7 @@ in_file = 'Scripts/issuer-lets-encrypt-staging.kube'
 url_ek_controlplane="192.168.1.62"
 email="ejemplo@gmail.com"
 name="ejemplo"
-appname="app-name"
+
 
 
 
@@ -27,7 +27,7 @@ with open(in_file, 'r') as f:
 # Reemplazar la palabra deseada
 contenido = contenido.replace("{{email}}", email)
 contenido = contenido.replace("{{name}}", name)
-contenido = contenido.replace("{{ingress}}", appname+"-ingress")
+contenido = contenido.replace("{{ingress}}", name+"-ingress")
 
 # Abrir el archivo de destino para escritura
 with open('temp.yaml', 'w') as f:
