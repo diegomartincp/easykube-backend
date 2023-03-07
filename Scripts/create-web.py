@@ -3,19 +3,20 @@ Este script abre un fichero .kube y lo modifica de acuerdo a los parámetros par
 """
 
 import os
+import sys
 import requests
 
 
 
-#url_ek_controlplane = sys.argv[1]
-#name = sys.argv[2]
-#url = sys.argv[3]
-#token = sys.argv[4]
+url_ek_controlplane = sys.argv[1]
+name = sys.argv[2]
+url = sys.argv[3]
+token = sys.argv[4]
 
-url_ek_controlplane="34.123.158.74"
-name="awebo"
-url = "https://github.com/diegomartincp/webpage_private_example.git"
-token="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"
+#url_ek_controlplane="34.123.158.74"
+#name="awebo"
+#url = "https://github.com/diegomartincp/webpage_private_example.git"
+#token="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"
 
 #Meter el token en la URL del git clone
 x = url.split("//")
@@ -23,7 +24,7 @@ tokenurl=x[0]+"//"+token+"@"+x[1]
 
 
 #FICHERO CON EL DEPLOYMENT
-in_file = 'Scripts/nginx-project.kube'
+in_file = os.getcwd()+"\\..\\Scripts\\files\\nginx-project.kube"
 # Abrir el archivo original para lectura
 with open(in_file, 'r') as f:
     # Leer el contenido del archivo
@@ -41,7 +42,7 @@ with open('temp.yaml', 'w') as f:
 
 with open('temp.yaml', 'rb') as f:
     r = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
-    print(r.content)
+    #print(r.content)
 
 
 os.remove('temp.yaml')
@@ -49,7 +50,7 @@ os.remove('temp.yaml')
 
 
 #FICHERO CON EL SERVICIO
-srvfile = 'Scripts/nginx-service.kube'
+srvfile = os.getcwd()+"\\..\\Scripts\\files\\nginx-service.kube"
 # Abrir el archivo original para lectura
 with open(srvfile, 'r') as f:
     # Leer el contenido del archivo
@@ -65,8 +66,8 @@ with open('temp.yaml', 'w') as f:
 
 
 with open('temp.yaml', 'rb') as f:
-    r = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
-    print(r.content)
+    r2 = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
+    print(r.content+r2.content)
 
 
 os.remove('temp.yaml')

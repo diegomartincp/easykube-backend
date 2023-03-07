@@ -3,20 +3,20 @@ Este script abre un fichero .kube y lo modifica de acuerdo a los parámetros
 """
 
 import os
+import sys
 import requests
-in_file = 'Scripts/ingress-ssl.kube'
 
+in_file = os.getcwd()+"\\..\\Scripts\\files\\ingress-ssl.kube"
 
+url_ek_controlplane = sys.argv[1]
+name = sys.argv[2]
+ipname = sys.argv[3]
+dominio = sys.argv[4]
 
-#url_ek_controlplane = sys.argv[1]
-#name = sys.argv[2]
-#ipname = sys.argv[3]
-#dominio = sys.argv[4]
-
-url_ek_controlplane="34.123.158.74"
-name="awebo"
-ipname="awebo"
-dominio="awebo.ddns.net"
+#url_ek_controlplane="34.123.158.74"
+#name="awebo"
+#ipname="awebo"
+#dominio="awebo.ddns.net"
 
 
 # Abrir el archivo original para lectura

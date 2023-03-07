@@ -3,18 +3,19 @@ Este script abre un fichero .kube y lo modifica de acuerdo a los parámetros
 """
 
 import os
+import sys
 import requests
-in_file = 'Scripts/issuer-lets-encrypt-prod.kube'
+
+in_file = os.getcwd()+"\\..\\Scripts\\files\\issuer-lets-encrypt-prod.kube"
 
 
+url_ek_controlplane = sys.argv[1]
+name = sys.argv[2]
+email = sys.argv[3]
 
-#url_ek_controlplane = sys.argv[1]
-#email = sys.argv[2]
-#env = sys.argv[3]
-#ingress = sys.argv[4]
-url_ek_controlplane="34.123.158.74"
-email="campos.martin.diego@gmail.com"
-name="awebo"
+#url_ek_controlplane="34.123.158.74"
+#email="campos.martin.diego@gmail.com"
+#name="awebo"
 
 
 
