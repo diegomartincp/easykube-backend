@@ -9,3 +9,7 @@ php artisan make:controller ProvisionServer
 
 INSERT INTO `workgroups` (`id`, `name`, `created_at`, `updated_at`, `admin`) VALUES ('1', 'EJEMPLO WORKGROUP', now(), now(), '1');
 INSERT INTO `invitation_codes` (`id`, `workgroup_id`, `code`, `created_at`, `updated_at`) VALUES ('1', '1', '21324354', now(), now());
+
+RUTAS PORTATIL
+RUTA_PYTHON='C:/Users/campo/AppData/Local/Microsoft/WindowsApps/python3.10.exe'
+RUTA_CARPETA_LARAVEL='C:\Users\campo\Documents\GIT\easykube-backend'

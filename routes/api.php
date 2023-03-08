@@ -54,5 +54,6 @@ Route::controller(kubernetesController::class)->group(function () {
     Route::get('add_cluster', 'add_cluster');
     Route::get('get_clusters', 'get_clusters');
     Route::get('deploy_web_project', 'deploy_web_project');
+    Route::get('get_health', 'get_health');
 
 });

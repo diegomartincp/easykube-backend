@@ -7,6 +7,7 @@ use App\Models\cluster;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
+use stdClass;
 
 class kubernetesController extends Controller
 {
@@ -39,7 +40,7 @@ class kubernetesController extends Controller
                     cluster::create([
                         'workgroup_id' => $user->workgroup_id,
                         'domain' => $request->domain,
-                        'description' => "Validated user ".$request->description,
+                        'description' => $request->description,
                     ]);
                     return response()->json([
                         'Created',
@@ -73,6 +74,31 @@ class kubernetesController extends Controller
         return $query;
     }
 
+    public function get_health(Request $request)
+    {
+        $clusters = $this->get_clusters($request);
+        //Decode json
+        $json_array  = json_decode($clusters, true);
+        $elementCount  = count($json_array);
+
+        // Crear un objeto JSON vacío
+        $health_json = new stdClass();
+
+        for ($i=0; $i < $elementCount; $i++) {
+            //Hacer algo con cada cluster
+            $response = Http::get($clusters[$i]->domain.'/get_pods_health');
+
+            //$response_json = json_encode(str($response));
+
+
+            $health_json->$i = json_decode(str($response));
+
+        }
+        //$health_json = json_encode($health_json);
+
+        return $health_json ;
+    }
+
     public function deploy_web_project(Request $request)
     {
         #Coger variables
@@ -81,8 +107,9 @@ class kubernetesController extends Controller
 
         #Crear secreto
         $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/empty-secret.py" ' . $request->domain." ".$request->name);
-        #$json = json_decode($result,true);
-        #$valores_ = json_encode($json['valores']);
+
+        //if($result!="b'Created'"){Return $result;}
+
         if($result!="b'Created'"){Return "Error creating secret";}
         #return $result;
 
