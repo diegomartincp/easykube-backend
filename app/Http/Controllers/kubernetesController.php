@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\cluster;
+use App\Models\web_project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
@@ -88,7 +89,13 @@ class kubernetesController extends Controller
             //Hacer algo con cada cluster
             $response = Http::get($clusters[$i]->domain.'/get_pods_health');
 
-            //$response_json = json_encode(str($response));
+            $cluster_array  = json_decode($response, true);
+            //$clusterCount  = count($cluster_array);
+
+            //Recorremos todos los deployments de cada cluster
+            foreach($cluster_array as $item) {
+                $deployment=$item;
+            }
 
 
             $health_json->$i = json_decode(str($response));
@@ -96,7 +103,9 @@ class kubernetesController extends Controller
         }
         //$health_json = json_encode($health_json);
 
-        return $health_json ;
+        //Aquí tenemos el json con todos los deployment, ahora necesitamos comparar con la bbdd
+
+        return $item;
     }
 
     public function deploy_web_project(Request $request)
@@ -114,7 +123,7 @@ class kubernetesController extends Controller
         #return $result;
 
         #Crear issuer
-        if($request->env=="prod"){
+        if($request->prod==1){
             #Crear issuer producción
             $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/issuer-prod.py" ' . $request->domain." ".$request->name." ".$request->email);
             if($result!="b'Created'"){Return "Error creating prod-issuer";}
@@ -132,6 +141,20 @@ class kubernetesController extends Controller
         #Crear ingress
         $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/ingress-ssl.py" ' . $request->domain." ".$request->name." ".$request->ipname." ".$request->dns);
         if($result!="b'Created'"){Return "Error creating ingress";}
+
+        #AÑADIR EN BBDD
+        $user = auth('api')->user();
+        web_project::create([
+            'name'=>$request->name,
+            'description'=>$request->description,
+            'email'=>$request->email,
+            'prod'=>$request->prod,
+            'token'=>$request->token,
+            'url'=>$request->url,
+            'ipname'=>$request->ipname,
+            'dns'=>$request->domain,
+            'workgroup_id'=>$user->workgroup_id,
+        ]);
 
         #FIN
         return "Successfull";

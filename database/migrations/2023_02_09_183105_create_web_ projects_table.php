@@ -13,16 +13,16 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('projects', function (Blueprint $table) {
+        Schema::create('web_projects', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('description');
-            $table->boolean('production');
-            $table->integer('deployment');
-            $table->integer('port');
-            $table->integer('replicas');
+            $table->string('email');
+            $table->boolean('prod');
+            $table->string('token');
             $table->string('url');
-            $table->boolean('validado')->default("0");
+            $table->string('ipname');
+            $table->string('dns');
             $table->integer('workgroup_id')->references('id')->on('workgroups');
             $table->timestamps();
         });
