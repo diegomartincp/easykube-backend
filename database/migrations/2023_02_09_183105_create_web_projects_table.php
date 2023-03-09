@@ -23,7 +23,9 @@ return new class extends Migration
             $table->string('url');
             $table->string('ipname');
             $table->string('dns');
+            $table->integer('cluster_id')->references('id')->on('cluster');
             $table->integer('workgroup_id')->references('id')->on('workgroups');
+            $table->boolean('aproved')->default(0);
             $table->timestamps();
         });
     }
@@ -35,6 +37,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('projects');
+        Schema::dropIfExists('web_projects');
     }
 };

@@ -83,32 +83,128 @@ class kubernetesController extends Controller
         $elementCount  = count($json_array);
 
         // Crear un objeto JSON vacío
-        $health_json = new stdClass();
+        $lectura = new stdClass();
 
+        $escritura = new stdClass();
+        $flag=0;
+        //Para cada cluster
         for ($i=0; $i < $elementCount; $i++) {
-            //Hacer algo con cada cluster
+
+            //Pedir todas sus cargas de trabajo
             $response = Http::get($clusters[$i]->domain.'/get_pods_health');
 
-            $cluster_array  = json_decode($response, true);
-            //$clusterCount  = count($cluster_array);
+            //Para cada carga de trabajo del cluster i
+            foreach(json_decode(str($response)) as $deployment){
+                $temp = new stdClass();
+                $temp->Name = $deployment->Name;
+                $temp->Replicas = $deployment->Replicas;
+                $temp->Avalaibable = $deployment->Avalaibable;
 
-            //Recorremos todos los deployments de cada cluster
-            foreach($cluster_array as $item) {
-                $deployment=$item;
+                //Verificar si la carga de trabajo es un proyecto
+                $nombre = explode("-deployment", $deployment->Name)[0];
+                $query = web_project::where('name', '=', $nombre )->first();
+
+                //!!!!!!!!VERIFICAR AQUI SI ES UN PROYECTO DE BBDD O FLASK DE LA TABLA QUE CREE EN SU MOMENTO IGUAL QUE ARRIBA
+
+                if ($query === null) {
+                    //No es una carga de trabajo de easykube
+                    $temp->from_app = False;
+                }
+                else{
+                    //Si es
+                    $temp->from_app = True;
+                }
+
+                $escritura->$flag = $temp;
+                $flag=$flag+1;
+
             }
 
 
-            $health_json->$i = json_decode(str($response));
-
         }
-        //$health_json = json_encode($health_json);
+        return $escritura;
+    }
 
-        //Aquí tenemos el json con todos los deployment, ahora necesitamos comparar con la bbdd
+    public function solicitar_web_project(Request $request)
+    {
+        #AÑADIR EN BBDD
+        $user = auth('api')->user();
+        web_project::create([
+            'name'=>$request->name,
+            'description'=>$request->description,
+            'email'=>$request->email,
+            'prod'=>$request->prod,
+            'token'=>$request->token,
+            'url'=>$request->url,
+            'ipname'=>$request->ipname,
+            'cluster_ip'=>$request->cluster_ip,
+            'dns'=>$request->dns,
+            'aproved'=>False,
+            'workgroup_id'=>$user->workgroup_id,
+        ]);
+        return "Successfull";
 
-        return $item;
+    }
+    public function ver_web_solicitados(Request $request)
+    {
+        $user = auth('api')->user();
+        $query = web_project::where('aproved', '=', False )->where('workgroup_id', '=', $user->workgroup_id )->get();;
+        return $query;
     }
 
     public function deploy_web_project(Request $request)
+    {
+        //Ver que proyecto es en la base de datos
+        $user = auth('api')->user();
+        $query = web_project::where('aproved', '=', False )
+        ->where('workgroup_id', '=', $user->workgroup_id )
+        ->where('id', '=', $request->id )
+        ->first();;
+
+        if($query==null){
+            return "ERROR";
+        }
+        return $query;
+        //Si llegamos aquí es que el proyect existe así que lo creamos
+
+
+        #Coger variables
+        $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
+        $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+
+        #Crear secreto
+        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/empty-secret.py" ' . $query->dns." ".$query->name);
+
+        //if($result!="b'Created'"){Return $result;}
+
+        if($result!="b'Created'"){Return "Error creating secret";}
+        #return $result;
+
+        #Crear issuer
+        if($request->prod==1){
+            #Crear issuer producción
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/issuer-prod.py" ' . $request->domain." ".$request->name." ".$request->email);
+            if($result!="b'Created'"){Return "Error creating prod-issuer";}
+        }
+        else{
+            #Crear issuer stagging
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/issuer-stagging.py" ' . $request->domain." ".$request->name." ".$request->email);
+            if($result!="b'Created'"){Return "Error creating stagging-issuer";}
+        }
+
+        #Crear proyecto web
+        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-web.py" ' . $request->domain." ".$request->name." ".$request->url." ".$request->token);
+        if($result!="b'CreatedCreated'"){Return "Error creating project";}
+
+        #Crear ingress
+        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/ingress-ssl.py" ' . $request->domain." ".$request->name." ".$request->ipname." ".$request->dns);
+        if($result!="b'Created'"){Return "Error creating ingress";}
+
+        #FIN
+        return "Successfull";
+    }
+    /*
+        public function deploy_web_project(Request $request)
     {
         #Coger variables
         $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
@@ -159,7 +255,6 @@ class kubernetesController extends Controller
         #FIN
         return "Successfull";
     }
-
-
+    */
 
 }
