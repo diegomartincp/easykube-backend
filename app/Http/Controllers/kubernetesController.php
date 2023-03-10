@@ -141,6 +141,7 @@ class kubernetesController extends Controller
             'dns'=>$request->dns,
             'aproved'=>False,
             'workgroup_id'=>$user->workgroup_id,
+            'cluster_id'=>$request->cluster_id
         ]);
         return "Successfull";
 
@@ -164,16 +165,21 @@ class kubernetesController extends Controller
         if($query==null){
             return "ERROR";
         }
-        return $query;
+
         //Si llegamos aquí es que el proyect existe así que lo creamos
 
+        //Primero recogemos la ip del cluster
+        $cluster = cluster::where('workgroup_id', '=', $user->workgroup_id )
+        ->where('id', '=', $query->cluster_id )
+        ->first();
+        $cluster_ip = $cluster->domain;
 
         #Coger variables
         $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
         $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
 
         #Crear secreto
-        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/empty-secret.py" ' . $query->dns." ".$query->name);
+        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/empty-secret.py" ' .$cluster_ip." ".$query->name);
 
         //if($result!="b'Created'"){Return $result;}
 
@@ -181,80 +187,33 @@ class kubernetesController extends Controller
         #return $result;
 
         #Crear issuer
-        if($request->prod==1){
+        if($query->prod==1){
             #Crear issuer producción
-            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/issuer-prod.py" ' . $request->domain." ".$request->name." ".$request->email);
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/issuer-prod.py" ' . $cluster_ip." ".$query->name." ".$query->email);
             if($result!="b'Created'"){Return "Error creating prod-issuer";}
         }
         else{
             #Crear issuer stagging
-            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/issuer-stagging.py" ' . $request->domain." ".$request->name." ".$request->email);
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/issuer-stagging.py" ' . $cluster_ip." ".$query->name." ".$query->email);
             if($result!="b'Created'"){Return "Error creating stagging-issuer";}
         }
 
         #Crear proyecto web
-        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-web.py" ' . $request->domain." ".$request->name." ".$request->url." ".$request->token);
+        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-web.py" ' . $cluster_ip." ".$query->name." ".$query->url." ".$query->token);
         if($result!="b'CreatedCreated'"){Return "Error creating project";}
 
         #Crear ingress
-        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/ingress-ssl.py" ' . $request->domain." ".$request->name." ".$request->ipname." ".$request->dns);
+        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/ingress-ssl.py" ' . $cluster_ip." ".$query->name." ".$query->ipname." ".$query->dns);
         if($result!="b'Created'"){Return "Error creating ingress";}
+
+
+        //Validar
+        DB::table('web_projects')
+        ->where('id', $request->id)
+        ->update(['aproved' => true]);
 
         #FIN
         return "Successfull";
     }
-    /*
-        public function deploy_web_project(Request $request)
-    {
-        #Coger variables
-        $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
-        $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
-
-        #Crear secreto
-        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/empty-secret.py" ' . $request->domain." ".$request->name);
-
-        //if($result!="b'Created'"){Return $result;}
-
-        if($result!="b'Created'"){Return "Error creating secret";}
-        #return $result;
-
-        #Crear issuer
-        if($request->prod==1){
-            #Crear issuer producción
-            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/issuer-prod.py" ' . $request->domain." ".$request->name." ".$request->email);
-            if($result!="b'Created'"){Return "Error creating prod-issuer";}
-        }
-        else{
-            #Crear issuer stagging
-            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/issuer-stagging.py" ' . $request->domain." ".$request->name." ".$request->email);
-            if($result!="b'Created'"){Return "Error creating stagging-issuer";}
-        }
-
-        #Crear proyecto web
-        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-web.py" ' . $request->domain." ".$request->name." ".$request->url." ".$request->token);
-        if($result!="b'CreatedCreated'"){Return "Error creating project";}
-
-        #Crear ingress
-        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/ingress-ssl.py" ' . $request->domain." ".$request->name." ".$request->ipname." ".$request->dns);
-        if($result!="b'Created'"){Return "Error creating ingress";}
-
-        #AÑADIR EN BBDD
-        $user = auth('api')->user();
-        web_project::create([
-            'name'=>$request->name,
-            'description'=>$request->description,
-            'email'=>$request->email,
-            'prod'=>$request->prod,
-            'token'=>$request->token,
-            'url'=>$request->url,
-            'ipname'=>$request->ipname,
-            'dns'=>$request->domain,
-            'workgroup_id'=>$user->workgroup_id,
-        ]);
-
-        #FIN
-        return "Successfull";
-    }
-    */
 
 }

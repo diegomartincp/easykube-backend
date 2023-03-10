@@ -19,5 +19,6 @@ class web_project extends Model
         'ipname',
         'dns',
         'workgroup_id',
+        'cluster_id'
     ];
 }
