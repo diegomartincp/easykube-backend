@@ -99,6 +99,7 @@ class kubernetesController extends Controller
                 $temp->Name = $deployment->Name;
                 $temp->Replicas = $deployment->Replicas;
                 $temp->Avalaibable = $deployment->Avalaibable;
+                $temp->cluster_id = $clusters[$i]->id;
 
                 //Verificar si la carga de trabajo es un proyecto
                 $nombre = explode("-deployment", $deployment->Name)[0];
@@ -106,7 +107,10 @@ class kubernetesController extends Controller
 
                 //!!!!!!!!VERIFICAR AQUI SI ES UN PROYECTO DE BBDD O FLASK DE LA TABLA QUE CREE EN SU MOMENTO IGUAL QUE ARRIBA
 
-                if ($query === null) {
+                if($nombre=="easykube-controlplane"){
+                    $temp->from_app = True;
+                }
+                else if ($query === null) {
                     //No es una carga de trabajo de easykube
                     $temp->from_app = False;
                 }
