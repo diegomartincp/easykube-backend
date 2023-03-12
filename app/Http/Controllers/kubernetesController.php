@@ -136,21 +136,33 @@ class kubernetesController extends Controller
 
     public function solicitar_web_project(Request $request)
     {
+        $user = auth('api')->user();
 
         //Buscar ese cluster que id tiene
-        $query = cluster::where('name', '=', $request->cluster )->first();
+        $query = cluster::where('name', '=', $request->cluster )->
+        where('workgroup_id', '=', $user->workgroup_id )->first();
 
         if($query==null){
-            return "ERROR";
+            return response()->json([
+                'status' => 'cluster not found',
+            ]);
+        }
+
+        //Vemos si el proyecto ya existe
+        $query = web_project::where('name', '=', $request->name )->where('cluster_id', '=', $query->id )->first();
+        if($query!=null){
+            return response()->json([
+                'status' => 'exists',
+            ]);
         }
 
         #AÑADIR EN BBDD
-        $user = auth('api')->user();
+
         web_project::create([
             'name'=>$request->name,
             'description'=>$request->description,
             'email'=>$request->email,
-            'prod'=>$request->prod,
+            'prod'=>$request->type,
             'token'=>$request->token,
             'url'=>$request->url,
             'ipname'=>$request->ipname,
@@ -160,7 +172,9 @@ class kubernetesController extends Controller
             'workgroup_id'=>$user->workgroup_id,
             'cluster_id'=>$query->id
         ]);
-        return "Successfull";
+        return response()->json([
+            'status' => 'success',
+        ]);
 
     }
     public function ver_web_solicitados(Request $request)
