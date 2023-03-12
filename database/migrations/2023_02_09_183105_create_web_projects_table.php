@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('ipname');
             $table->string('dns');
             $table->integer('cluster_id')->references('id')->on('cluster');
+            $table->integer('replicas');
             $table->integer('workgroup_id')->references('id')->on('workgroups');
             $table->boolean('aproved')->default(0);
             $table->timestamps();

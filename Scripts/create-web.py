@@ -12,6 +12,7 @@ url_ek_controlplane = sys.argv[1]
 name = sys.argv[2]
 url = sys.argv[3]
 token = sys.argv[4]
+replicas = sys.argv[5]
 
 #url_ek_controlplane="34.123.158.74"
 #name="awebo"
@@ -33,6 +34,7 @@ with open(in_file, 'r') as f:
 # Reemplazar la palabra deseada
 contenido = contenido.replace("{{token-url}}",tokenurl)
 contenido = contenido.replace("{{name}}",name)
+contenido = contenido.replace("{{replicas}}",replicas)
 
 # Abrir el archivo de destino para escritura
 with open('temp.yaml', 'w') as f:

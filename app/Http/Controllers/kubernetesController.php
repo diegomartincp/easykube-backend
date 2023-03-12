@@ -139,17 +139,20 @@ class kubernetesController extends Controller
         $user = auth('api')->user();
 
         //Buscar ese cluster que id tiene
-        $query = cluster::where('name', '=', $request->cluster )->
+        $cluster = cluster::where('name', '=', $request->cluster )->
         where('workgroup_id', '=', $user->workgroup_id )->first();
 
-        if($query==null){
+
+
+        if($cluster==null){
             return response()->json([
                 'status' => 'cluster not found',
             ]);
         }
 
         //Vemos si el proyecto ya existe
-        $query = web_project::where('name', '=', $request->name )->where('cluster_id', '=', $query->id )->first();
+        $query = web_project::where('name', '=', $request->name )->where('cluster_id', '=', $cluster->id )->first();
+
         if($query!=null){
             return response()->json([
                 'status' => 'exists',
@@ -169,9 +172,11 @@ class kubernetesController extends Controller
             'cluster_ip'=>$request->cluster_ip,
             'dns'=>$request->dns,
             'aproved'=>False,
+            'replicas'=>$request->replicas,
             'workgroup_id'=>$user->workgroup_id,
-            'cluster_id'=>$query->id
+            'cluster_id'=>$cluster->id
         ]);
+
         return response()->json([
             'status' => 'success',
         ]);
@@ -230,7 +235,7 @@ class kubernetesController extends Controller
         }
 
         #Crear proyecto web
-        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-web.py" ' . $cluster_ip." ".$query->name." ".$query->url." ".$query->token);
+        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-web.py" ' . $cluster_ip." ".$query->name." ".$query->url." ".$query->token." ".$query->replicas);
         if($result!="b'CreatedCreated'"){Return "Error creating project";}
 
         #Crear ingress
