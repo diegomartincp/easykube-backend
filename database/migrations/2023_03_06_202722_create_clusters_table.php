@@ -15,9 +15,11 @@ return new class extends Migration
     {
         Schema::create('clusters', function (Blueprint $table) {
             $table->id();
-            $table->integer('workgroup_id')->references('id')->on('workgroups');
+            $table->string('name');
             $table->string('description');
+            $table->string('type');
             $table->string('domain')->unique();;
+            $table->integer('workgroup_id')->references('id')->on('workgroups');
             $table->timestamps();
         });
     }

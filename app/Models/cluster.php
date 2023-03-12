@@ -10,7 +10,9 @@ class cluster extends Model
     use HasFactory;
 
     protected $fillable = [
+        'name',
         'description',
+        'type',
         'domain',
         'workgroup_id',
     ];

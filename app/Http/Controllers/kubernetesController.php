@@ -23,6 +23,8 @@ class kubernetesController extends Controller
             $request->validate([
                 'domain' => 'required|string',
                 'description' => 'required|string',
+                'name' => 'required|string',
+                'type' => 'required|string',
             ]);
         } catch (\Throwable $th) {
             return response()->json([
@@ -40,8 +42,10 @@ class kubernetesController extends Controller
                 try {
                     cluster::create([
                         'workgroup_id' => $user->workgroup_id,
+                        'name' => $request->name,
                         'domain' => $request->domain,
                         'description' => $request->description,
+                        'type' => $request->type,
                     ]);
                     return response()->json([
                         'Created',
@@ -69,7 +73,7 @@ class kubernetesController extends Controller
     {
         $user = auth('api')->user();
         $query = DB::table('clusters')
-                ->select('id', 'domain', 'description')
+                ->select('id', 'name' ,'domain','type', 'description')
                 ->where('workgroup_id', $user->workgroup_id)
                 ->get();
         return $query;
@@ -126,7 +130,8 @@ class kubernetesController extends Controller
 
 
         }
-        return $escritura;
+
+        return json_decode(json_encode($escritura), true);
     }
 
     public function solicitar_web_project(Request $request)
