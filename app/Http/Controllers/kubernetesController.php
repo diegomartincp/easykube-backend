@@ -136,6 +136,14 @@ class kubernetesController extends Controller
 
     public function solicitar_web_project(Request $request)
     {
+
+        //Buscar ese cluster que id tiene
+        $query = cluster::where('name', '=', $request->cluster )->first();
+
+        if($query==null){
+            return "ERROR";
+        }
+
         #AÑADIR EN BBDD
         $user = auth('api')->user();
         web_project::create([
@@ -150,7 +158,7 @@ class kubernetesController extends Controller
             'dns'=>$request->dns,
             'aproved'=>False,
             'workgroup_id'=>$user->workgroup_id,
-            'cluster_id'=>$request->cluster_id
+            'cluster_id'=>$query->id
         ]);
         return "Successfull";
 
