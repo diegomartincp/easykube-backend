@@ -384,7 +384,19 @@ class kubernetesController extends Controller
             //Crear log
             $log = log::create([
                 'user_id' => $user->id,
-                'description' => "Deleted: '".$query->description."'",
+                'description' => "Deleted ticket: '".$query->description."'",
+            ]);
+        }
+        else{
+            //Actualizar la peticion
+            DB::table('web_tickets')
+            ->where('id', $request->web_ticket_id)
+            ->update(['declined' => true]);
+
+            //Crear log
+            $log = log::create([
+                'user_id' => $user->id,
+                'description' => "Deleted ticket: '".$query->description."'",
             ]);
         }
         return response()->json([
