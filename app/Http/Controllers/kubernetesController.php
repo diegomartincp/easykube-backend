@@ -197,7 +197,7 @@ class kubernetesController extends Controller
         //Guardar el log del proyecto creado
         $log = log::create([
             'user_id' => $user->id,
-            'description' => "Requested new web project '".$request->name."'",
+            'description' => "Requested create web project '".$request->name."'",
         ]);
 
         return response()->json([
@@ -303,9 +303,17 @@ class kubernetesController extends Controller
         }
 
         //si el usuario es admin puede hacer cosas
+
+        //Recoger el web ticket
         $query = DB::table('web_tickets')
         ->where('id', $request->web_ticket_id)
         ->first();
+
+        if($query==null){
+            return response()->json([
+                'status'=>"Web ticket dont exist",
+            ]);
+        }
 
 
         //Crear proyecto
@@ -325,7 +333,7 @@ class kubernetesController extends Controller
 
             //Actualizar el web project
             DB::table('web_projects')
-            ->where('id', $request->web_project_id)
+            ->where('id', $query->web_project_id)
             ->update(['aproved' => true]);
 
             //Crear log
@@ -338,6 +346,49 @@ class kubernetesController extends Controller
             'status'=>'success',
         ]);
 
+    }
+    public function delete_web_tickets(Request $request)
+    {
+        $user = auth('api')->user();
+        if($user->admin!=1){
+            return response()->json([
+                'forbidden',
+            ]);
+        }
+
+        //si el usuario es admin puede hacer cosas
+        //Recoger que ticket es
+        $query = DB::table('web_tickets')
+        ->where('id', $request->web_ticket_id)
+        ->first();
+
+        if($query==null){
+            return response()->json([
+                'status'=>"Web ticket dont exist",
+            ]);
+        }
+
+        //Si es un ticket de crear web
+        if($query->action==0){
+            //Actualizar la peticion
+            DB::table('web_tickets')
+            ->where('id', $request->web_ticket_id)
+            ->update(['declined' => true]);
+
+            //Actualizar el web project
+            DB::table('web_projects')
+            ->where('id', $query->web_project_id)
+            ->delete();
+
+            //Crear log
+            $log = log::create([
+                'user_id' => $user->id,
+                'description' => "Deleted: '".$query->description."'",
+            ]);
+        }
+        return response()->json([
+            'status'=>'success',
+        ]);
     }
 
 }

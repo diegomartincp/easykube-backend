@@ -59,4 +59,5 @@ Route::controller(kubernetesController::class)->group(function () {
     Route::get('ver_web_solicitados', 'ver_web_solicitados');
     Route::get('get_web_tickets', 'get_web_tickets');
     Route::post('accept_web_tickets', 'accept_web_tickets');
+    Route::post('delete_web_tickets', 'delete_web_tickets');
 });
