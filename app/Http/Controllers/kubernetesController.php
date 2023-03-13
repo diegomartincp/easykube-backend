@@ -306,11 +306,11 @@ class kubernetesController extends Controller
         //si el usuario es admin puede hacer cosas
 
         //Recoger el web ticket
-        $query = DB::table('web_tickets')
+        $web_ticket = DB::table('web_tickets')
         ->where('id', $request->web_ticket_id)
         ->first();
 
-        if($query==null){
+        if($web_ticket==null){
             return response()->json([
                 'status'=>"Web ticket dont exist",
             ]);
@@ -318,9 +318,9 @@ class kubernetesController extends Controller
 
 
         //Crear proyecto
-        if($query->action==0){
-            //Deploy del web project de la query
-            $resultado=$this->deploy_web_project($query->web_project_id);
+        if($web_ticket->action==0){
+            //Deploy del web project de la query web_tickets
+            $resultado=$this->deploy_web_project($web_ticket->web_project_id);
 
             if($resultado!="Successfull"){
                 return response()->json([
@@ -334,13 +334,53 @@ class kubernetesController extends Controller
 
             //Actualizar el web project
             DB::table('web_projects')
-            ->where('id', $query->web_project_id)
+            ->where('id', $web_ticket->web_project_id)
             ->update(['aproved' => true]);
 
             //Crear log
             $log = log::create([
                 'user_id' => $user->id,
-                'description' => "Accepted: '".$query->description."'",
+                'description' => "Ticket accepted: '".$web_ticket->description."'",
+            ]);
+        }
+
+        //UPDATE REPLICAS
+        if($web_ticket->action==1){
+            //Necesitamos saber primero que proyecto es
+            $user = auth('api')->user();
+            $web_project = web_project::where('workgroup_id', '=', $user->workgroup_id )
+            ->where('id', '=', $web_ticket->web_project_id )
+            ->first();
+
+
+            //Sabiendo el proyecto sacamos el cluster en el que se ejecuta
+            $cluster = cluster::where('workgroup_id', '=', $user->workgroup_id )
+            ->where('id', '=', $web_project->cluster_id )
+            ->first();
+
+            //Tenemos la dirección del cluster
+            $cluster_ip = $cluster->domain;
+
+            //Actualizar las replicas
+            #Coger variables
+            $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
+            $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/update-replicas.py" '.$cluster_ip." ".$web_project->name." ".$web_ticket->replicas);
+            if($result!="b'success'"){
+                return response()->json([
+                    'status'=>$result,
+                ]);
+            }
+
+            //Actualizar la peticion
+            DB::table('web_tickets')
+            ->where('id', $request->web_ticket_id)
+            ->update(['accepted' => true]);
+
+            //Crear log
+            $log = log::create([
+                'user_id' => $user->id,
+                'description' => "Ticket accepted: '".$web_ticket->description."'",
             ]);
         }
         return response()->json([
@@ -413,11 +453,13 @@ class kubernetesController extends Controller
         return $query;
     }
 
+    //Esta función CREA UN TICKET para modificar el número de réplicas
     public function apply_update_web_replicas(Request $request)
     {
     $user = auth('api')->user();
     web_ticket::create([
         'action' => 1, //0 Crear //1 Replicas //2 Borrar
+        'replicas' => $request->replicas,
         'description' => "Update replicas up to ".$request->replicas." for project '".$request->project_name."'",
         'user_id' => $user->id,
         'web_project_id' => $request->web_project_id,
