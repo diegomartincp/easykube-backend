@@ -17,10 +17,12 @@ return new class extends Migration
         Schema::create('web_tickets', function (Blueprint $table) {
             $table->id();
             $table->integer('action'); //0 Crear //1 Replicas //2 Borrar
-            $table->integer('replicas');
+            $table->integer('replicas')->default(0);
             $table->string('description');
             $table->integer('user_id')->references('id')->on('users');
             $table->integer('web_project_id')->references('id')->on('web_project');
+            $table->boolean('accepted')->default(0);
+            $table->boolean('declined')->default(0);
             $table->timestamps();
         });
     }

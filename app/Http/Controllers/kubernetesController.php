@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\cluster;
 use App\Models\web_project;
+use App\Models\web_ticket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use stdClass;
+use App\Models\log;
 
 class kubernetesController extends Controller
 {
@@ -159,8 +161,8 @@ class kubernetesController extends Controller
             ]);
         }
 
-        #AÑADIR EN BBDD
 
+        #AÑADIR EN BBDD
         web_project::create([
             'name'=>$request->name,
             'description'=>$request->description,
@@ -177,6 +179,27 @@ class kubernetesController extends Controller
             'cluster_id'=>$cluster->id
         ]);
 
+
+
+
+        //Ver cual es el id del proyecto que se acaba de crear
+        $proyecto = web_project::where('name', '=', $request->name )->where('cluster_id', '=', $cluster->id )->first();
+
+
+
+        web_ticket::create([
+            'action' => 0, //0 Crear //1 Replicas //2 Borrar
+            'description' => "Create project ".$request->name,
+            'user_id' => $user->id,
+            'web_project_id' => $proyecto->id,
+        ]);
+
+        //Guardar el log del proyecto creado
+        $log = log::create([
+            'user_id' => $user->id,
+            'description' => "Requested new web project '".$request->name."'",
+        ]);
+
         return response()->json([
             'status' => 'success',
         ]);
@@ -189,18 +212,20 @@ class kubernetesController extends Controller
         return $query;
     }
 
-    public function deploy_web_project(Request $request)
+    public function deploy_web_project(int $web_project_id)
     {
         //Ver que proyecto es en la base de datos
         $user = auth('api')->user();
         $query = web_project::where('aproved', '=', False )
         ->where('workgroup_id', '=', $user->workgroup_id )
-        ->where('id', '=', $request->id )
+        ->where('id', '=', $web_project_id )
         ->first();;
 
         if($query==null){
             return "ERROR";
         }
+
+
 
         //Si llegamos aquí es que el proyect existe así que lo creamos
 
@@ -218,9 +243,7 @@ class kubernetesController extends Controller
         $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/empty-secret.py" ' .$cluster_ip." ".$query->name);
 
         //if($result!="b'Created'"){Return $result;}
-
         if($result!="b'Created'"){Return "Error creating secret";}
-        #return $result;
 
         #Crear issuer
         if($query->prod==1){
@@ -245,11 +268,76 @@ class kubernetesController extends Controller
 
         //Validar
         DB::table('web_projects')
-        ->where('id', $request->id)
+        ->where('id', $web_project_id)
         ->update(['aproved' => true]);
 
         #FIN
         return "Successfull";
+    }
+
+    public function get_web_tickets(Request $request)
+    {
+        $user = auth('api')->user();
+        if($user->admin==1){
+            $query = DB::table('web_tickets')
+            ->join('users', 'web_tickets.user_id', '=', 'users.id')
+            ->select('web_tickets.*', 'users.name')
+            ->where('accepted', 0)
+            ->where('declined', 0)
+            ->orderBy('created_at','desc')->get();
+            return $query;
+        }
+        else{
+            return response()->json([
+                'forbidden',
+            ]);
+        }
+    }
+    public function accept_web_tickets(Request $request)
+    {
+        $user = auth('api')->user();
+        if($user->admin!=1){
+            return response()->json([
+                'forbidden',
+            ]);
+        }
+
+        //si el usuario es admin puede hacer cosas
+        $query = DB::table('web_tickets')
+        ->where('id', $request->web_ticket_id)
+        ->first();
+
+
+        //Crear proyecto
+        if($query->action==0){
+            //Deploy del web project de la query
+            $resultado=$this->deploy_web_project($query->web_project_id);
+
+            if($resultado!="Successfull"){
+                return response()->json([
+                    'status'=>$resultado,
+                ]);
+            }
+            //Actualizar la peticion
+            DB::table('web_tickets')
+            ->where('id', $request->web_ticket_id)
+            ->update(['accepted' => true]);
+
+            //Actualizar el web project
+            DB::table('web_projects')
+            ->where('id', $request->web_project_id)
+            ->update(['aproved' => true]);
+
+            //Crear log
+            $log = log::create([
+                'user_id' => $user->id,
+                'description' => "Accepted: '".$query->description."'",
+            ]);
+        }
+        return response()->json([
+            'status'=>'success',
+        ]);
+
     }
 
 }

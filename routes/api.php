@@ -57,5 +57,6 @@ Route::controller(kubernetesController::class)->group(function () {
     Route::get('get_health', 'get_health');
     Route::post('solicitar_web_project', 'solicitar_web_project');
     Route::get('ver_web_solicitados', 'ver_web_solicitados');
-
+    Route::get('get_web_tickets', 'get_web_tickets');
+    Route::post('accept_web_tickets', 'accept_web_tickets');
 });
