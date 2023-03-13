@@ -107,7 +107,7 @@ class kubernetesController extends Controller
                 $temp->Avalaibable = $deployment->Avalaibable;
                 $temp->cluster_id = $clusters[$i]->id;
 
-                //Verificar si la carga de trabajo es un proyecto
+                //Verificar si la carga de trabajo es un proyecto web
                 $nombre = explode("-deployment", $deployment->Name)[0];
                 $query = web_project::where('name', '=', $nombre )->first();
 
@@ -123,6 +123,7 @@ class kubernetesController extends Controller
                 else{
                     //Si es
                     $temp->from_app = True;
+                    $temp->web_project_id = $query->id;
                 }
 
                 $escritura->$flag = $temp;
@@ -390,5 +391,27 @@ class kubernetesController extends Controller
             'status'=>'success',
         ]);
     }
+    public function get_web_project(Request $request)
+    {
+        $query=DB::table('web_projects')
+        ->where('web_projects.id', $request->web_project_id)
+        ->join('clusters', 'web_projects.cluster_id', '=', 'clusters.id')
+        ->select('web_projects.*', 'clusters.name AS cluster_name')
+        ->first();
+        return $query;
+    }
 
+    public function apply_update_web_replicas(Request $request)
+    {
+    $user = auth('api')->user();
+    web_ticket::create([
+        'action' => 1, //0 Crear //1 Replicas //2 Borrar
+        'description' => "Update replicas up to ".$request->replicas." for project '".$request->project_name."'",
+        'user_id' => $user->id,
+        'web_project_id' => $request->web_project_id,
+    ]);
+    return response()->json([
+        'status'=>'success',
+    ]);
+    }
 }

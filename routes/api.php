@@ -60,4 +60,6 @@ Route::controller(kubernetesController::class)->group(function () {
     Route::get('get_web_tickets', 'get_web_tickets');
     Route::post('accept_web_tickets', 'accept_web_tickets');
     Route::post('delete_web_tickets', 'delete_web_tickets');
+    Route::post('get_web_project', 'get_web_project');
+    Route::post('apply_update_web_replicas', 'apply_update_web_replicas');
 });
