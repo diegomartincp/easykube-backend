@@ -14,11 +14,13 @@ return new class extends Migration
     public function up()
     {
         //AUN SIN USO
-        Schema::create('tickets', function (Blueprint $table) {
+        Schema::create('web_tickets', function (Blueprint $table) {
             $table->id();
-            $table->integer('action');
+            $table->integer('action'); //0 Crear //1 Replicas //2 Borrar
+            $table->integer('replicas');
             $table->string('description');
-            $table->integer('workgroup')->references('id')->on('workgroup');
+            $table->integer('user_id')->references('id')->on('users');
+            $table->integer('web_project_id')->references('id')->on('web_project');
             $table->timestamps();
         });
     }
@@ -30,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tickets');
+        Schema::dropIfExists('web_tickets');
     }
 };
