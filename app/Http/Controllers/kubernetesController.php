@@ -388,6 +388,44 @@ class kubernetesController extends Controller
                 'description' => "Ticket accepted: '".$web_ticket->description."'",
             ]);
         }
+        //Borrar
+        if($web_ticket->action==2){
+            //Necesitamos saber primero que proyecto es
+            $user = auth('api')->user();
+            $web_project = web_project::where('workgroup_id', '=', $user->workgroup_id )
+            ->where('id', '=', $web_ticket->web_project_id )
+            ->first();
+
+
+            //Sabiendo el proyecto sacamos el cluster en el que se ejecuta
+            $cluster = cluster::where('workgroup_id', '=', $user->workgroup_id )
+            ->where('id', '=', $web_project->cluster_id )
+            ->first();
+
+            //Tenemos la dirección del cluster
+            $cluster_ip = $cluster->domain;
+
+
+            //Ahora que sabemos que proyecto es
+            $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
+            $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/delete-project.py" '.$cluster_ip." ".$web_project->name);
+            if($result!="b'ok'"){
+                return response()->json([
+                    'status'=>$result,
+                ]);
+            }
+            //Crear log
+            $log = log::create([
+                'user_id' => $user->id,
+                'description' => "Ticket accepted: '".$web_ticket->description."'",
+            ]);
+            //Actualizar la peticion
+            DB::table('web_tickets')
+            ->where('id', $request->web_ticket_id)
+            ->update(['accepted' => true]);
+
+        }
         return response()->json([
             'status'=>'success',
         ]);
@@ -485,6 +523,12 @@ class kubernetesController extends Controller
         'description' => "Delete project '".$web_project->name."'",
         'user_id' => $user->id,
         'web_project_id' => $request->web_project_id,
+    ]);
+
+    //Guardar el log del proyecto creado
+    $log = log::create([
+        'user_id' => $user->id,
+        'description' => "Requested delete web project '".$web_project->name."'",
     ]);
     return response()->json([
         'status'=>'success',
