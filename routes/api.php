@@ -51,7 +51,7 @@ Route::controller(loggedController::class)->group(function () {
 });
 
 Route::controller(kubernetesController::class)->group(function () {
-    Route::get('add_cluster', 'add_cluster');
+    Route::post('add_cluster', 'add_cluster');
     Route::get('get_clusters', 'get_clusters');
     Route::get('deploy_web_project', 'deploy_web_project');
     Route::get('get_health', 'get_health');
@@ -62,4 +62,5 @@ Route::controller(kubernetesController::class)->group(function () {
     Route::post('delete_web_tickets', 'delete_web_tickets');
     Route::post('get_web_project', 'get_web_project');
     Route::post('apply_update_web_replicas', 'apply_update_web_replicas');
+    Route::post('apply_delete_web_project', 'apply_delete_web_project');
 });

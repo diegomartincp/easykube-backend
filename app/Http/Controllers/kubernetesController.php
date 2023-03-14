@@ -50,23 +50,23 @@ class kubernetesController extends Controller
                         'type' => $request->type,
                     ]);
                     return response()->json([
-                        'Created',
+                        'status'=>'created',
                     ]);
                 } catch (\Throwable $th) {
                     return response()->json([
-                        'Already exists',
+                        'status'=>'Already exists',
                     ]);
                 }
 
             }else{
                 return response()->json([
-                    'Error',
+                    'status'=>'Error',
                 ]);
             }
         }
         else{
             return response()->json([
-                'Forbidden',
+                'status'=>'Forbidden',
             ]);
         }
     }
@@ -377,6 +377,11 @@ class kubernetesController extends Controller
             ->where('id', $request->web_ticket_id)
             ->update(['accepted' => true]);
 
+            //Actualizar el web project
+            DB::table('web_projects')
+            ->where('id', $web_ticket->web_project_id)
+            ->update(['replicas' => $web_ticket->replicas]);
+
             //Crear log
             $log = log::create([
                 'user_id' => $user->id,
@@ -445,10 +450,9 @@ class kubernetesController extends Controller
     }
     public function get_web_project(Request $request)
     {
-        $query=DB::table('web_projects')
-        ->where('web_projects.id', $request->web_project_id)
+        $query=web_project::select('web_projects.*' , 'clusters.name AS cluster_name')
         ->join('clusters', 'web_projects.cluster_id', '=', 'clusters.id')
-        ->select('web_projects.*', 'clusters.name AS cluster_name')
+        ->where('web_projects.id', '=', $request->web_project_id)
         ->first();
         return $query;
     }
@@ -468,4 +472,24 @@ class kubernetesController extends Controller
         'status'=>'success',
     ]);
     }
+    public function apply_delete_web_project(Request $request)
+    {
+    $user = auth('api')->user();
+    $web_project=DB::table('web_projects')
+    ->where('id', $request->web_project_id)
+    ->where('workgroup_id', $user->workgroup_id)
+    ->first();
+
+    web_ticket::create([
+        'action' => 2, //0 Crear //1 Replicas //2 Borrar
+        'description' => "Delete project '".$web_project->name."'",
+        'user_id' => $user->id,
+        'web_project_id' => $request->web_project_id,
+    ]);
+    return response()->json([
+        'status'=>'success',
+    ]);
+    }
+
+
 }
