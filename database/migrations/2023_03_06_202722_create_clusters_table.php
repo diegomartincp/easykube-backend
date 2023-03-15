@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('description');
             $table->string('type');
             $table->string('domain')->unique();;
+            $table->boolean('active')->default(1);
             $table->integer('workgroup_id')->references('id')->on('workgroups');
             $table->timestamps();
         });

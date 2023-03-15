@@ -33,8 +33,25 @@ class kubernetesController extends Controller
                 'Arguments missing',
             ]);
         }
-
+        //Primero comprobamos si el cluster ya existe y únicamente fue desactivado el seguimiento
         $user = auth('api')->user();
+        $existe = cluster::where('domain', $request->domain)->where('workgroup_id', $user->workgroup_id)->where('active', false)->first();
+
+        //Si ya existia
+        if($existe!=null){
+            cluster::where('domain', $request->domain)->where('workgroup_id', $user->workgroup_id)->update(['active' => true]);;
+                    //Guardar el log del proyecto creado
+            log::create([
+                'user_id' => $user->id,
+                'description' => "Added agin cluster '".$existe->name."'",
+            ]);
+            return response()->json([
+                'status'=>'validated',
+            ]);
+        }
+
+
+
         if($user->admin==1){
             //Primero recoger la ip del endpoint
             $response = Http::get($request->domain.'/info');
@@ -48,6 +65,10 @@ class kubernetesController extends Controller
                         'domain' => $request->domain,
                         'description' => $request->description,
                         'type' => $request->type,
+                    ]);
+                    log::create([
+                        'user_id' => $user->id,
+                        'description' => "Added cluster '".$request->name."'",
                     ]);
                     return response()->json([
                         'status'=>'created',
@@ -71,12 +92,35 @@ class kubernetesController extends Controller
         }
     }
 
+    public function delete_cluster(Request $request)
+    {
+
+        $user = auth('api')->user();
+        if($user->admin==1){
+                    //Validar
+        cluster::where('id', $request->cluster_id)
+        ->update(['active' => false]);
+        $cluster=cluster::where('id', $request->cluster_id)
+        ->first();
+
+        log::create([
+            'user_id' => $user->id,
+            'description' => "Deleted cluster '".$cluster->name."'",
+        ]);
+
+        return response()->json([
+            'status'=>'success',
+        ]);
+        }
+    }
+
     public function get_clusters(Request $request)
     {
         $user = auth('api')->user();
         $query = DB::table('clusters')
                 ->select('id', 'name' ,'domain','type', 'description')
                 ->where('workgroup_id', $user->workgroup_id)
+                ->where('active', true)
                 ->get();
         return $query;
     }
@@ -109,7 +153,10 @@ class kubernetesController extends Controller
 
                 //Verificar si la carga de trabajo es un proyecto web
                 $nombre = explode("-deployment", $deployment->Name)[0];
-                $query = web_project::where('name', '=', $nombre )->first();
+                $query = web_project::where('name', '=', $nombre )
+                ->join('clusters', 'web_projects.cluster_id', '=', 'clusters.id')
+                ->where('active', 1)
+                ->first();
 
                 //!!!!!!!!VERIFICAR AQUI SI ES UN PROYECTO DE BBDD O FLASK DE LA TABLA QUE CREE EN SU MOMENTO IGUAL QUE ARRIBA
 
