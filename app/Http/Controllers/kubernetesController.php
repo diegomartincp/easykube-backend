@@ -35,7 +35,9 @@ class kubernetesController extends Controller
         }
         //Primero comprobamos si el cluster ya existe y únicamente fue desactivado el seguimiento
         $user = auth('api')->user();
-        $existe = cluster::where('domain', $request->domain)->where('workgroup_id', $user->workgroup_id)->where('active', false)->first();
+        $existe = cluster::where('domain', $request->domain)
+        ->where('workgroup_id', $user->workgroup_id)
+        ->where('active', false)->first();
 
         //Si ya existia
         if($existe!=null){
@@ -153,7 +155,7 @@ class kubernetesController extends Controller
 
                 //Verificar si la carga de trabajo es un proyecto web
                 $nombre = explode("-deployment", $deployment->Name)[0];
-                $query = web_project::where('name', '=', $nombre )
+                $query = web_project::where('web_projects.name', '=', $nombre )
                 ->join('clusters', 'web_projects.cluster_id', '=', 'clusters.id')
                 ->where('active', 1)
                 ->first();
