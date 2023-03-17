@@ -156,9 +156,12 @@ class kubernetesController extends Controller
                 //Verificar si la carga de trabajo es un proyecto web
                 $nombre = explode("-deployment", $deployment->Name)[0];
                 $query = web_project::where('web_projects.name', '=', $nombre )
+                ->select('clusters.*', 'web_projects.*')
                 ->join('clusters', 'web_projects.cluster_id', '=', 'clusters.id')
                 ->where('active', 1)
                 ->first();
+
+
 
                 //!!!!!!!!VERIFICAR AQUI SI ES UN PROYECTO DE BBDD O FLASK DE LA TABLA QUE CREE EN SU MOMENTO IGUAL QUE ARRIBA
 
@@ -173,6 +176,7 @@ class kubernetesController extends Controller
                     //Si es
                     $temp->from_app = True;
                     $temp->web_project_id = $query->id;
+                    $temp->query = $query;
                 }
 
                 $escritura->$flag = $temp;
