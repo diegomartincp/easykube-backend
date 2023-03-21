@@ -313,9 +313,14 @@ class kubernetesController extends Controller
             if($result!="b'Created'"){Return "Error creating stagging-issuer";}
         }
 
-        #Crear proyecto web
+        #Crear proyecto web y el servicio
         $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-web.py" ' . $cluster_ip." ".$query->name." ".$query->url." ".$query->token." ".$query->replicas);
         if($result!="b'CreatedCreated'"){Return "Error creating project";}
+
+        #Crear HPA
+        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-hpa.py" ' . $cluster_ip." ".$query->name." ".$query->replicas);
+        #if($result!="b'Created'"){Return "Error creating hpa";}
+        if($result!="b'Created'"){Return $result;}
 
         #Crear ingress
         $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/ingress-ssl.py" ' . $cluster_ip." ".$query->name." ".$query->ipname." ".$query->dns);

@@ -9,7 +9,7 @@ spec:
   selector:
     matchLabels:
       app: {{name}}
-  replicas: {{replicas}}
+  #replicas: {{replicas}}
   template:
     metadata:
       labels:
@@ -24,6 +24,12 @@ spec:
         volumeMounts:
         - mountPath: "/usr/share/nginx/html"
           name: www-data
+        #Caracterísicas para el autoescalado
+        resources:
+            limits:
+                cpu: 500m
+            requests:
+                cpu: 100m
       #CONTENEDORE CON EL GIT-CLONER
       initContainers:
       - name: git-cloner
