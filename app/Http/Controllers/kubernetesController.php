@@ -596,4 +596,59 @@ class kubernetesController extends Controller
     }
 
 
+    /**
+     * Esta función solo recibe un dominio y el nombre del deployment a reiniciar
+     */
+    public function restart_pods(string $domain,string $name)
+    {
+
+        $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
+        $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+
+        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/restart-pods.py" '.$domain." ".$name);
+
+        if($result!="b'success'"){
+            return $result;
+        }
+
+        $user = auth('api')->user();
+        log::create([
+            'user_id' => $user->id,
+            'description' => "Restarted ".$name." project pods",
+        ]);
+
+        return "ok";
+    }
+    public function restart_web_pods(Request $request)
+    {
+        $user = auth('api')->user();
+
+        //Recogemos la información del proyecto
+        $web_project=DB::table('web_projects')
+        ->select('web_projects.*','clusters.domain')
+        ->join('clusters', 'web_projects.cluster_id', '=', 'clusters.id')
+        ->where('web_projects.id', $request->web_project_id)
+        ->where('web_projects.workgroup_id', $user->workgroup_id)
+        ->first();
+
+
+        $result=$this->restart_pods($web_project->domain,$web_project->name);
+
+        if($result!= "ok"){
+            return response()->json([
+                'status'=>$result,
+                ]);
+        }else{
+            return response()->json([
+            'status'=>"success",
+            ]);
+        }
+
+    }
+
+
+
+
+
+
 }
