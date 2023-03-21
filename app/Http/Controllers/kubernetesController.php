@@ -259,6 +259,8 @@ class kubernetesController extends Controller
         ]);
 
     }
+
+    //Se deja como soporte pero en principio no se usa pues se utilizan los tickets
     public function ver_web_solicitados(Request $request)
     {
         $user = auth('api')->user();
