@@ -65,4 +65,5 @@ Route::controller(kubernetesController::class)->group(function () {
     Route::post('apply_delete_web_project', 'apply_delete_web_project');
     Route::post('delete_cluster', 'delete_cluster');
     Route::post('restart_web_pods', 'restart_web_pods');
+    Route::post('web_project_health', 'web_project_health');
 });

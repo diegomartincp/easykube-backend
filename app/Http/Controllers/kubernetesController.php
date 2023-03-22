@@ -647,6 +647,35 @@ class kubernetesController extends Controller
     }
 
 
+    //Esta función devuelve la salud de un proyecto web haciendo uso de project_health()
+    public function web_project_health(Request $request)
+    {
+        $user = auth('api')->user();
+        //Recogemos la información del proyecto
+        $web_project=DB::table('web_projects')
+        ->select('web_projects.*','clusters.domain')
+        ->join('clusters', 'web_projects.cluster_id', '=', 'clusters.id')
+        ->where('web_projects.id', $request->web_project_id)
+        ->where('web_projects.workgroup_id', $user->workgroup_id)
+        ->first();
+
+        return $this->project_health($web_project->domain, $web_project->name);
+    }
+    //esta función llama al cluster de kubernetes para que le devuelva la salud de un poyecto en concreto
+    public function project_health(string $domain,string $name)
+    {
+
+        $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
+        $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+
+        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/project-health.py" '.$domain." ".$name);
+        $result = substr($result, 2);
+        $result = substr($result, 0,-1);
+
+        return $result;
+    }
+
+
 
 
 
