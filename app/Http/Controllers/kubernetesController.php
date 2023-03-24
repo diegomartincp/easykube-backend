@@ -558,6 +558,7 @@ class kubernetesController extends Controller
     public function apply_update_web_replicas(Request $request)
     {
     $user = auth('api')->user();
+    #Se crea el ticket
     web_ticket::create([
         'action' => 1, //0 Crear //1 Replicas //2 Borrar
         'replicas' => $request->replicas,
@@ -565,6 +566,12 @@ class kubernetesController extends Controller
         'user_id' => $user->id,
         'web_project_id' => $request->web_project_id,
     ]);
+    //Se crea un log
+    log::create([
+        'user_id' => $user->id,
+        'description' => "Requested Update replicas up to ".$request->replicas." for project '".$request->project_name."'",
+    ]);
+    //se responde con el mensaje de aceptación
     return response()->json([
         'status'=>'success',
     ]);
