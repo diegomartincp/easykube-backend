@@ -604,6 +604,7 @@ class kubernetesController extends Controller
 
     /**
      * Esta función solo recibe un dominio y el nombre del deployment a reiniciar
+     * SE LLAMA DESDE EL SIGUIENTE MÉTODO restart_web_pods()
      */
     public function restart_pods(string $domain,string $name)
     {
@@ -638,7 +639,7 @@ class kubernetesController extends Controller
         ->first();
 
 
-        $result=$this->restart_pods($web_project->domain,$web_project->name);
+        $result=$this->restart_pods($web_project->domain,$web_project->name); //Llamada a la función restart_pods
 
         if($result!= "ok"){
             return response()->json([
@@ -665,9 +666,11 @@ class kubernetesController extends Controller
         ->where('web_projects.workgroup_id', $user->workgroup_id)
         ->first();
 
-        return $this->project_health($web_project->domain, $web_project->name);
+        return $this->project_health($web_project->domain, $web_project->name); //Llamada a la función project_health
     }
-    //esta función llama al cluster de kubernetes para que le devuelva la salud de un poyecto en concreto
+    /*esta función llama al cluster de kubernetes para que le devuelva la salud de un poyecto en concreto
+    SE EMPLEA DESDE web_project_health()
+    */
     public function project_health(string $domain,string $name)
     {
 
