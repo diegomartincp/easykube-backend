@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim # Create PVC
+metadata:
+  name: {{name}}-volume-claim # Sets PVC's name
+  namespace: default
+  labels:
+    app: {{name}} # Defines app to create PVC for
+spec:
+  storageClassName: {{name}}-storage
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{memory}}Gi # Sets PVC's size

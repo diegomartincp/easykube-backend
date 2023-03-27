@@ -1,0 +1,13 @@
+# Create ConfigMap postgres-secret for the postgres app
+# Define default database name, user, and password
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: default
+  name: {{name}}-secret
+  labels:
+    app: {{name}}
+data:
+  POSTGRES_DB: {{db}}
+  POSTGRES_USER: {{user}}
+  POSTGRES_PASSWORD: {{pwd}}
