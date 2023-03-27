@@ -5,15 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class web_ticket extends Model
+class bbdd_projects extends Model
 {
     use HasFactory;
-
     protected $fillable = [
-        'action', //0 Crear //1 Replicas //2 Borrar
-        'replicas',
+        'name',
         'description',
-        'user_id',
-        'bbdd_project_id',
+        'memory',
+        'dbname',
+        'dbuser',
+        'dbpwd',
+        'aproved',
+        'replicas',
+        'workgroup_id',
+        'cluster_id',
     ];
+
 }

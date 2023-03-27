@@ -21,8 +21,8 @@ pwd = "a1234"
 
 
 #1. CONFIGMAP
-#in_file = os.getcwd()+"\\..\\Scripts\\files\\hpa.kube"
-in_file = os.getcwd()+"\\Scripts\\files\\postgres-configmap.kube"
+in_file = os.getcwd()+"\\..\\Scripts\\files\\postgres-configmap.kube"
+#in_file = os.getcwd()+"\\Scripts\\files\\postgres-configmap.kube"
 
 # Abrir el archivo original para lectura
 with open(in_file, 'r') as f:
@@ -51,8 +51,8 @@ os.remove('temp.yaml')
 
 #------------------
 #2. VOLUME
-#in_file = os.getcwd()+"\\..\\Scripts\\files\\hpa.kube"
-in_file = os.getcwd()+"\\Scripts\\files\\postgres-volume.kube"
+in_file = os.getcwd()+"\\..\\Scripts\\files\\postgres-volume.kube"
+#in_file = os.getcwd()+"\\Scripts\\files\\postgres-volume.kube"
 
 # Abrir el archivo original para lectura
 with open(in_file, 'r') as f:
@@ -78,8 +78,8 @@ os.remove('temp.yaml')
 
 #------------------
 #3. PVC
-#in_file = os.getcwd()+"\\..\\Scripts\\files\\hpa.kube"
-in_file = os.getcwd()+"\\Scripts\\files\\postgres-pvc.kube"
+in_file = os.getcwd()+"\\..\\Scripts\\files\\postgres-pvc.kube"
+#in_file = os.getcwd()+"\\Scripts\\files\\postgres-pvc.kube"
 
 # Abrir el archivo original para lectura
 with open(in_file, 'r') as f:
@@ -106,8 +106,8 @@ os.remove('temp.yaml')
 
 #------------------
 #3. PVC
-#in_file = os.getcwd()+"\\..\\Scripts\\files\\hpa.kube"
-in_file = os.getcwd()+"\\Scripts\\files\\postgres-deployment.kube"
+in_file = os.getcwd()+"\\..\\Scripts\\files\\postgres-deployment.kube"
+#in_file = os.getcwd()+"\\Scripts\\files\\postgres-deployment.kube"
 
 # Abrir el archivo original para lectura
 with open(in_file, 'r') as f:
@@ -132,8 +132,8 @@ os.remove('temp.yaml')
 
 #------------------
 #3. PVC
-#in_file = os.getcwd()+"\\..\\Scripts\\files\\hpa.kube"
-in_file = os.getcwd()+"\\Scripts\\files\\postgres-service.kube"
+in_file = os.getcwd()+"\\..\\Scripts\\files\\postgres-service.kube"
+#in_file = os.getcwd()+"\\Scripts\\files\\postgres-service.kube"
 
 # Abrir el archivo original para lectura
 with open(in_file, 'r') as f:

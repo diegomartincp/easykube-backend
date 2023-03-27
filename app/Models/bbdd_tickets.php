@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class web_ticket extends Model
+class bbdd_tickets extends Model
 {
     use HasFactory;
 
@@ -16,4 +16,5 @@ class web_ticket extends Model
         'user_id',
         'bbdd_project_id',
     ];
+
 }

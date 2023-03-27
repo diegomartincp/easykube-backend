@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\kubernetesController;
+use App\Http\Controllers\kubernetesBBDDController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController; //Para autenticar
@@ -66,4 +67,9 @@ Route::controller(kubernetesController::class)->group(function () {
     Route::post('delete_cluster', 'delete_cluster');
     Route::post('restart_web_pods', 'restart_web_pods');
     Route::post('web_project_health', 'web_project_health');
+});
+
+Route::controller(kubernetesBBDDController::class)->group(function () {
+    Route::get('apply_create_bbdd_proyect', 'apply_create_bbdd_proyect');
+    Route::get('get_bbdd_tickets', 'get_bbdd_tickets');
 });
