@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\bbdd_projects;
 use App\Models\cluster;
 use App\Models\web_project;
 use App\Models\web_ticket;
@@ -161,6 +162,13 @@ class kubernetesController extends Controller
                 ->where('active', 1)
                 ->first();
 
+                //Verificar si es proyecto bbdd
+                $esbbdd = bbdd_projects::where('bbdd_projects.name', '=', $nombre )
+                ->select('clusters.*', 'bbdd_projects.*')
+                ->join('clusters', 'bbdd_projects.cluster_id', '=', 'clusters.id')
+                ->where('active', 1)
+                ->first();
+
 
 
                 //!!!!!!!!VERIFICAR AQUI SI ES UN PROYECTO DE BBDD O FLASK DE LA TABLA QUE CREE EN SU MOMENTO IGUAL QUE ARRIBA
@@ -168,15 +176,21 @@ class kubernetesController extends Controller
                 if($nombre=="easykube-controlplane"){
                     $temp->from_app = True;
                 }
-                else if ($query === null) {
+                else if ($query === null && $esbbdd === null) {
                     //No es una carga de trabajo de easykube
                     $temp->from_app = False;
                 }
-                else{
-                    //Si es
+                else if($query !== null){
+                    //Si es carga web
                     $temp->from_app = True;
                     $temp->web_project_id = $query->id;
                     $temp->query = $query;
+                }
+                else if($esbbdd !== null){
+                    //Si es carga web
+                    $temp->from_app = True;
+                    $temp->bbdd_project_id = $esbbdd->id;
+                    $temp->esbbdd = $esbbdd;
                 }
 
                 $escritura->$flag = $temp;

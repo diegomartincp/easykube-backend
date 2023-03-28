@@ -257,4 +257,33 @@ class KubernetesBBDDController extends Controller
 
 
     }
+
+    public function get_bbdd_project(Request $request)
+    {
+        $query=bbdd_projects::select('bbdd_projects.*' , 'clusters.name AS cluster_name')
+        ->join('clusters', 'bbdd_projects.cluster_id', '=', 'clusters.id')
+        ->where('bbdd_projects.id', '=', $request->bbdd_project_id)
+        ->first();
+        return $query;
+    }
+
+    public function bbdd_project_health(Request $request)
+    {
+        $user = auth('api')->user();
+        //Recogemos la información del proyecto
+        $web_project=bbdd_projects::select('bbdd_projects.*','clusters.domain')
+        ->join('clusters', 'bbdd_projects.cluster_id', '=', 'clusters.id')
+        ->where('bbdd_projects.id', $request->bbdd_project_id)
+        ->where('bbdd_projects.workgroup_id', $user->workgroup_id)
+        ->first();
+
+        $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
+        $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+
+        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/project-health.py" '. $web_project->domain." ". $web_project->name);
+        $result = substr($result, 2);
+        $result = substr($result, 0,-1);
+
+        return $result;
+    }
 }
