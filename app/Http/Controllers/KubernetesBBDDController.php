@@ -90,4 +90,171 @@ class KubernetesBBDDController extends Controller
             ]);
         }
     }
+
+    public function accept_bbdd_tickets(Request $request)
+    {
+        //Cromprobar si es administrador
+        $user = auth('api')->user();
+        if($user->admin!=1){
+            return response()->json([
+                'forbidden',
+            ]);
+        }
+        //si el usuario es admin puede hacer cosas
+
+        //Recoger el web ticket en base al id que se aporta en la petición
+        $bbdd_ticket = bbdd_tickets::where('id', $request->bbdd_ticket_id)
+        ->first();
+
+        if($bbdd_ticket==null){
+            return response()->json([
+                'status'=>"Web ticket dont exist",
+            ]);
+        }
+
+
+        //Crear proyecto
+        if($bbdd_ticket->action==0){
+
+            $resultado=$this->deploy_bbdd_projects($bbdd_ticket->bbdd_project_id);
+
+            if($resultado!="Successfull"){
+                return response()->json([
+                    'status'=>$resultado,
+                ]);
+            }
+
+
+            //Actualizar la peticion
+            bbdd_tickets::where('id', $request->bbdd_ticket_id)
+            ->update(['accepted' => true]);
+
+            //Actualizar el web project
+            bbdd_projects::where('id', $bbdd_ticket->bbdd_project_id)
+            ->update(['aproved' => true]);
+
+            //Crear log
+            log::create([
+                'user_id' => $user->id,
+                'description' => "Ticket accepted: '".$bbdd_ticket->description."'",
+            ]);
+        }
+        /*
+        //UPDATE REPLICAS
+        if($web_ticket->action==1){
+            //Necesitamos saber primero que proyecto es
+            $user = auth('api')->user();
+            $web_project = web_project::where('workgroup_id', '=', $user->workgroup_id )
+            ->where('id', '=', $web_ticket->web_project_id )
+            ->first();
+
+
+            //Sabiendo el proyecto sacamos el cluster en el que se ejecuta
+            $cluster = cluster::where('workgroup_id', '=', $user->workgroup_id )
+            ->where('id', '=', $web_project->cluster_id )
+            ->first();
+
+            //Tenemos la dirección del cluster
+            $cluster_ip = $cluster->domain;
+
+            //Actualizar las replicas
+            #Coger variables
+            $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
+            $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/update-replicas.py" '.$cluster_ip." ".$web_project->name." ".$web_ticket->replicas);
+            if($result!="b'success'"){
+                return response()->json([
+                    'status'=>$result,
+                ]);
+            }
+
+            //Actualizar la peticion
+            DB::table('web_tickets')
+            ->where('id', $request->web_ticket_id)
+            ->update(['accepted' => true]);
+
+            //Actualizar el web project
+            DB::table('web_projects')
+            ->where('id', $web_ticket->web_project_id)
+            ->update(['replicas' => $web_ticket->replicas]);
+
+            //Crear log
+            $log = log::create([
+                'user_id' => $user->id,
+                'description' => "Ticket accepted: '".$web_ticket->description."'",
+            ]);
+        }
+        //Borrar
+        if($web_ticket->action==2){
+            //Necesitamos saber primero que proyecto es
+            $user = auth('api')->user();
+            $web_project = web_project::where('workgroup_id', '=', $user->workgroup_id )
+            ->where('id', '=', $web_ticket->web_project_id )
+            ->first();
+
+
+            //Sabiendo el proyecto sacamos el cluster en el que se ejecuta
+            $cluster = cluster::where('workgroup_id', '=', $user->workgroup_id )
+            ->where('id', '=', $web_project->cluster_id )
+            ->first();
+
+            //Tenemos la dirección del cluster
+            $cluster_ip = $cluster->domain;
+
+
+            //Ahora que sabemos que proyecto es
+            $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
+            $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/delete-project.py" '.$cluster_ip." ".$web_project->name);
+            if($result!="b'ok'"){
+                return response()->json([
+                    'status'=>$result,
+                ]);
+            }
+            //Crear log
+            $log = log::create([
+                'user_id' => $user->id,
+                'description' => "Ticket accepted: '".$web_ticket->description."'",
+            ]);
+            //Actualizar la peticion
+            DB::table('web_tickets')
+            ->where('id', $request->web_ticket_id)
+            ->update(['accepted' => true]);
+
+        }
+        */
+        return response()->json([
+            'status'=>'success',
+        ]);
+
+    }
+    public function deploy_bbdd_projects(int $bbdd_project_id){
+        //Ver que proyecto es en la base de datos
+        $user = auth('api')->user();
+        $query = bbdd_projects::select('bbdd_projects.*',"clusters.domain")
+        ->where('aproved', '=', False )
+        ->where('bbdd_projects.workgroup_id', '=', $user->workgroup_id )
+        ->where('bbdd_projects.id', '=', $bbdd_project_id )
+        ->join("clusters",'bbdd_projects.cluster_id', '=','clusters.id')
+        ->first();;
+
+        if($query==null){
+            return "ERROR";
+        }
+
+        //Tenemos toda la información necesaria para desplegar la bbdd
+        #Coger variables
+        $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
+        $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+
+        #Crear secreto
+        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-bbdd.py" ' .$query->domain." ".$query->name." ".$query->memory." ".$query->dbname." ".$query->dbuser." ".$query->dbpwd);
+        //return $RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-bbdd.py" ' .$query->domain." ".$query->name." ".$query->memory." ".$query->dbname." ".$query->dbuser." ".$query->dbpwd;
+        //if($result!="b'Created'"){Return $result;}
+        if($result!="b'CreatedCreatedCreatedCreatedCreated'"){Return $result;}
+
+        return "Successfull";
+
+
+    }
 }

@@ -72,4 +72,5 @@ Route::controller(kubernetesController::class)->group(function () {
 Route::controller(kubernetesBBDDController::class)->group(function () {
     Route::post('solicitar_bbdd', 'solicitar_bbdd');
     Route::get('get_bbdd_tickets', 'get_bbdd_tickets');
+    Route::post('accept_bbdd_tickets', 'accept_bbdd_tickets');
 });

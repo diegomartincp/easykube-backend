@@ -4,19 +4,12 @@ import requests
 
 
 
-#url_ek_controlplane = sys.argv[1]
-#name = sys.argv[2]
-#memory = sys.argv[3]
-#db = sys.argv[4]
-#user = sys.argv[5]
-#pwd = sys.argv[6]
-
-url_ek_controlplane = "localhost:81"
-name = "lotenemos"
-memory = "3"
-db = "diegodb"
-user = "diego"
-pwd = "a1234"
+url_ek_controlplane = sys.argv[1]
+name = sys.argv[2]
+memory = sys.argv[3]
+db = sys.argv[4]
+user = sys.argv[5]
+pwd = sys.argv[6]
 
 
 
@@ -42,11 +35,8 @@ with open('temp.yaml', 'w') as f:
 
 
 with open('temp.yaml', 'rb') as f:
-    r = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
-    print(r.content)
+    r1 = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
 os.remove('temp.yaml')
-
-
 
 
 #------------------
@@ -70,8 +60,7 @@ with open('temp.yaml', 'w') as f:
 
 
 with open('temp.yaml', 'rb') as f:
-    r = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
-    print(r.content)
+    r2 = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
 os.remove('temp.yaml')
 
 
@@ -97,8 +86,7 @@ with open('temp.yaml', 'w') as f:
 
 
 with open('temp.yaml', 'rb') as f:
-    r = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
-    print(r.content)
+    r3 = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
 os.remove('temp.yaml')
 
 
@@ -124,8 +112,7 @@ with open('temp.yaml', 'w') as f:
 
 
 with open('temp.yaml', 'rb') as f:
-    r = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
-    print(r.content)
+    r4 = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
 os.remove('temp.yaml')
 
 
@@ -150,6 +137,8 @@ with open('temp.yaml', 'w') as f:
 
 
 with open('temp.yaml', 'rb') as f:
-    r = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
-    print(r.content)
+    r5 = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
 os.remove('temp.yaml')
+
+#Imprimir resultados
+print(r1.content+r2.content+r3.content+r4.content+r5.content)
