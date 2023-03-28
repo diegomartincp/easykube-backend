@@ -15,7 +15,7 @@ class KubernetesBBDDController extends Controller
     {
         $this->middleware('auth:api');
     }
-    public function apply_create_bbdd_proyect(Request $request)
+    public function solicitar_bbdd(Request $request)
     {
         $user = auth('api')->user();
 

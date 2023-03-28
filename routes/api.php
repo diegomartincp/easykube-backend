@@ -70,6 +70,6 @@ Route::controller(kubernetesController::class)->group(function () {
 });
 
 Route::controller(kubernetesBBDDController::class)->group(function () {
-    Route::get('apply_create_bbdd_proyect', 'apply_create_bbdd_proyect');
+    Route::post('solicitar_bbdd', 'solicitar_bbdd');
     Route::get('get_bbdd_tickets', 'get_bbdd_tickets');
 });

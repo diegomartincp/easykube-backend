@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('replicas')->default(0);
             $table->string('description');
             $table->integer('user_id')->references('id')->on('users');
-            $table->integer('web_project_id')->references('id')->on('web_project');
+            $table->integer('bbdd_project_id')->references('id')->on('bbdd_projects');
             $table->boolean('accepted')->default(0);
             $table->boolean('declined')->default(0);
             $table->timestamps();
