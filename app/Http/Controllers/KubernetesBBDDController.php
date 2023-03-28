@@ -291,4 +291,27 @@ class KubernetesBBDDController extends Controller
 
         return $result;
     }
+
+        //Esta función CREA UN TICKET para modificar el número de réplicas
+    public function apply_update_bbdd_replicas(Request $request)
+    {
+        $user = auth('api')->user();
+        #Se crea el ticket
+        bbdd_tickets::create([
+            'action' => 1, //0 Crear //1 Replicas //2 Borrar
+            'replicas' => $request->replicas,
+            'description' => "Update replicas up to ".$request->replicas." for project '".$request->project_name."'",
+            'user_id' => $user->id,
+            'bbdd_project_id' => $request->bbdd_project_id,
+        ]);
+        //Se crea un log
+        log::create([
+            'user_id' => $user->id,
+            'description' => "Requested Update replicas up to ".$request->replicas." for project '".$request->project_name."'",
+        ]);
+        //se responde con el mensaje de aceptación
+        return response()->json([
+            'status'=>'success',
+        ]);
+    }
 }

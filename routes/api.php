@@ -75,4 +75,5 @@ Route::controller(kubernetesBBDDController::class)->group(function () {
     Route::post('accept_bbdd_tickets', 'accept_bbdd_tickets');
     Route::post('get_bbdd_project', 'get_bbdd_project');
     Route::post('bbdd_project_health', 'bbdd_project_health');
+    Route::post('apply_update_bbdd_replicas', 'apply_update_bbdd_replicas');
 });
