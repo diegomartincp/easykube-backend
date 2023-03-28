@@ -253,6 +253,11 @@ class KubernetesBBDDController extends Controller
         //if($result!="b'Created'"){Return $result;}
         if($result!="b'CreatedCreatedCreatedCreatedCreated'"){Return $result;}
 
+        #Crear HPA
+        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-hpa.py" ' . $query->domain." ".$query->name." ".$query->replicas);
+        #if($result!="b'Created'"){Return "Error creating hpa";}
+        if($result!="b'Created'"){Return $result;}
+
         return "Successfull";
 
 
