@@ -46,6 +46,7 @@ class KubernetesBBDDController extends Controller
             'dbname'=>$request->dbname,
             'dbuser'=>$request->dbuser,
             'dbpwd'=>$request->dbpwd,
+            'provider'=>$request->provider,
             'aproved'=>False,
             'replicas'=>$request->replicas,
             'workgroup_id'=>$user->workgroup_id,
@@ -93,6 +94,8 @@ class KubernetesBBDDController extends Controller
 
     public function accept_bbdd_tickets(Request $request)
     {
+
+
         //Cromprobar si es administrador
         $user = auth('api')->user();
         if($user->admin!=1){
@@ -112,11 +115,22 @@ class KubernetesBBDDController extends Controller
             ]);
         }
 
+        //recogemos el proyecto
+        $bbdd_projects = bbdd_projects::select("*")->where('id',"=", $bbdd_ticket->bbdd_project_id)->first();
 
         //Crear proyecto
         if($bbdd_ticket->action==0){
 
-            $resultado=$this->deploy_bbdd_projects_gke($bbdd_ticket->bbdd_project_id);
+
+
+
+            if($bbdd_projects->provider=="Google Cloud Platform"){
+                $resultado=$this->deploy_bbdd_projects_gke($bbdd_ticket->bbdd_project_id);
+            }
+            else{
+                $resultado=$this->deploy_bbdd_projects($bbdd_ticket->bbdd_project_id);
+            }
+
 
             if($resultado!="Successfull"){
                 return response()->json([

@@ -16,6 +16,7 @@ class bbdd_projects extends Model
         'dbuser',
         'dbpwd',
         'aproved',
+        'provider',
         'replicas',
         'workgroup_id',
         'cluster_id',

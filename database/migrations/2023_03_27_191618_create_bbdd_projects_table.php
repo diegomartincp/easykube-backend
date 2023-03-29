@@ -22,7 +22,8 @@ return new class extends Migration
             $table->string('dbuser');
             $table->string('dbpwd');
             $table->integer('cluster_id')->references('id')->on('cluster');
-            $table->integer('replicas');
+            $table->integer('replicas')->default(1);
+            $table->string('provider')->default(null);
             $table->integer('workgroup_id')->references('id')->on('workgroups');
             $table->boolean('aproved')->default(0);
             $table->timestamps();
