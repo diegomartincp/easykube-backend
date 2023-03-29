@@ -116,7 +116,7 @@ class KubernetesBBDDController extends Controller
         //Crear proyecto
         if($bbdd_ticket->action==0){
 
-            $resultado=$this->deploy_bbdd_projects($bbdd_ticket->bbdd_project_id);
+            $resultado=$this->deploy_bbdd_projects_gke($bbdd_ticket->bbdd_project_id);
 
             if($resultado!="Successfull"){
                 return response()->json([
@@ -262,7 +262,33 @@ class KubernetesBBDDController extends Controller
 
 
     }
+    public function deploy_bbdd_projects_gke(int $bbdd_project_id){
+        //Ver que proyecto es en la base de datos
+        $user = auth('api')->user();
+        $query = bbdd_projects::select('bbdd_projects.*',"clusters.domain")
+        ->where('aproved', '=', False )
+        ->where('bbdd_projects.workgroup_id', '=', $user->workgroup_id )
+        ->where('bbdd_projects.id', '=', $bbdd_project_id )
+        ->join("clusters",'bbdd_projects.cluster_id', '=','clusters.id')
+        ->first();;
 
+        if($query==null){
+            return "ERROR";
+        }
+
+        //Tenemos toda la información necesaria para desplegar la bbdd
+        #Coger variables
+        $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
+        $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+
+        #Crear secreto
+        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-bbdd-gke.py" ' .$query->domain." ".$query->name." ".$query->memory." ".$query->dbname." ".$query->dbuser." ".$query->dbpwd);
+        //return $RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-bbdd.py" ' .$query->domain." ".$query->name." ".$query->memory." ".$query->dbname." ".$query->dbuser." ".$query->dbpwd;
+        //if($result!="b'Created'"){Return $result;}
+        if($result!="b'CreatedCreatedCreatedCreatedCreated'"){Return $result;}
+
+        return "Successfull";
+    }
     public function get_bbdd_project(Request $request)
     {
         $query=bbdd_projects::select('bbdd_projects.*' , 'clusters.name AS cluster_name')
