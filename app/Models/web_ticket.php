@@ -15,5 +15,6 @@ class web_ticket extends Model
         'description',
         'user_id',
         'bbdd_project_id',
+        'web_project_id'
     ];
 }
