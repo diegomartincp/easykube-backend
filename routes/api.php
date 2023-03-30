@@ -77,4 +77,5 @@ Route::controller(kubernetesBBDDController::class)->group(function () {
     Route::post('bbdd_project_health', 'bbdd_project_health');
     Route::post('apply_update_bbdd_replicas', 'apply_update_bbdd_replicas');
     Route::post('apply_delete_bbdd_project', 'apply_delete_bbdd_project');
+    Route::post('postgres_backup', 'postgres_backup');
 });

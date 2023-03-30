@@ -8,7 +8,5 @@ import requests
 #replicas = sys.argv[3]
 
 
-r = requests.get("http://localhost:81/postgres_backup?name=lotenemos&dbuser=diego&dbname=diegodb")
-with open('backup.sql', 'wb') as f:
-    f.write(r.content)
+print(os.getcwd())
 

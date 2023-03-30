@@ -8,6 +8,7 @@ use App\Models\bbdd_tickets;
 use App\Models\cluster;
 use App\Models\log;
 use Illuminate\Http\Request;
+use Response;
 
 class KubernetesBBDDController extends Controller
 {
@@ -351,5 +352,32 @@ class KubernetesBBDDController extends Controller
     return response()->json([
         'status'=>'success',
     ]);
+    }
+
+    public function postgres_backup(Request $request)
+    {
+        //En base al usuario accedemos a la información del proyecto bbdd para extraer las credenciales
+        $user = auth('api')->user();
+
+        //recogemos el proyecto y el cluster
+        $bbdd_projects = bbdd_projects::select("bbdd_projects.*","clusters.domain")
+        ->where('bbdd_projects.id',"=", $request->bbdd_project_id)
+        ->where('bbdd_projects.workgroup_id', $user->workgroup_id)
+        ->join("clusters","bbdd_projects.cluster_id","clusters.id")->first();
+
+        $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
+        $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+
+        //exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/postgres-backup.py" '.$bbdd_projects->domain." ".$bbdd_projects->name." ".$bbdd_projects->dbuser." ".$bbdd_projects->dbname);
+        $ruta=exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/TEST.py');
+
+
+        $file= public_path(). "/download/info.pdf";
+
+        $headers = array(
+                  'Content-Type: application/sql',
+                );
+
+        return Response::download('../backup.sql', 'backup.sql', $headers);
     }
 }
