@@ -115,14 +115,12 @@ class KubernetesBBDDController extends Controller
             ]);
         }
 
-        //recogemos el proyecto
-        $bbdd_projects = bbdd_projects::select("*")->where('id',"=", $bbdd_ticket->bbdd_project_id)->first();
+        //recogemos el proyecto y el cluster
+        $bbdd_projects = bbdd_projects::select("bbdd_projects.*","clusters.domain")->where('bbdd_projects.id',"=", $bbdd_ticket->bbdd_project_id)
+        ->join("clusters","bbdd_projects.cluster_id","clusters.id")->first();
 
         //Crear proyecto
         if($bbdd_ticket->action==0){
-
-
-
 
             if($bbdd_projects->provider=="Google Cloud Platform"){
                 $resultado=$this->deploy_bbdd_projects_gke($bbdd_ticket->bbdd_project_id);
@@ -153,29 +151,18 @@ class KubernetesBBDDController extends Controller
                 'description' => "Ticket accepted: '".$bbdd_ticket->description."'",
             ]);
         }
-        /*
+
         //UPDATE REPLICAS
-        if($web_ticket->action==1){
-            //Necesitamos saber primero que proyecto es
-            $user = auth('api')->user();
-            $web_project = web_project::where('workgroup_id', '=', $user->workgroup_id )
-            ->where('id', '=', $web_ticket->web_project_id )
-            ->first();
-
-
-            //Sabiendo el proyecto sacamos el cluster en el que se ejecuta
-            $cluster = cluster::where('workgroup_id', '=', $user->workgroup_id )
-            ->where('id', '=', $web_project->cluster_id )
-            ->first();
+        if($bbdd_ticket->action==1){
 
             //Tenemos la dirección del cluster
-            $cluster_ip = $cluster->domain;
+            $cluster_ip = $bbdd_projects->domain;
 
             //Actualizar las replicas
             #Coger variables
             $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
             $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
-            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/update-replicas.py" '.$cluster_ip." ".$web_project->name." ".$web_ticket->replicas);
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/update-replicas.py" '.$cluster_ip." ".$bbdd_projects->name." ".$bbdd_ticket->replicas);
             if($result!="b'success'"){
                 return response()->json([
                     'status'=>$result,
@@ -183,21 +170,20 @@ class KubernetesBBDDController extends Controller
             }
 
             //Actualizar la peticion
-            DB::table('web_tickets')
-            ->where('id', $request->web_ticket_id)
+            bbdd_tickets::where('id', $request->bbdd_ticket_id)
             ->update(['accepted' => true]);
 
             //Actualizar el web project
-            DB::table('web_projects')
-            ->where('id', $web_ticket->web_project_id)
-            ->update(['replicas' => $web_ticket->replicas]);
+            bbdd_projects::where('id', $bbdd_ticket->bbdd_project_id)
+            ->update(['replicas' => $bbdd_ticket->replicas]);
 
             //Crear log
-            $log = log::create([
+            log::create([
                 'user_id' => $user->id,
-                'description' => "Ticket accepted: '".$web_ticket->description."'",
+                'description' => "Ticket accepted: '".$bbdd_ticket->description."'",
             ]);
         }
+        /*
         //Borrar
         if($web_ticket->action==2){
             //Necesitamos saber primero que proyecto es
@@ -332,7 +318,7 @@ class KubernetesBBDDController extends Controller
         return $result;
     }
 
-        //Esta función CREA UN TICKET para modificar el número de réplicas
+        //Esta función CREA UN TICKET para modificar el número de réplicas de un proyecto on premises
     public function apply_update_bbdd_replicas(Request $request)
     {
         $user = auth('api')->user();
