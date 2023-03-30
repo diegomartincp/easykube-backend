@@ -183,29 +183,18 @@ class KubernetesBBDDController extends Controller
                 'description' => "Ticket accepted: '".$bbdd_ticket->description."'",
             ]);
         }
-        /*
+
         //Borrar
-        if($web_ticket->action==2){
-            //Necesitamos saber primero que proyecto es
-            $user = auth('api')->user();
-            $web_project = web_project::where('workgroup_id', '=', $user->workgroup_id )
-            ->where('id', '=', $web_ticket->web_project_id )
-            ->first();
-
-
-            //Sabiendo el proyecto sacamos el cluster en el que se ejecuta
-            $cluster = cluster::where('workgroup_id', '=', $user->workgroup_id )
-            ->where('id', '=', $web_project->cluster_id )
-            ->first();
+        if($bbdd_ticket->action==2){
 
             //Tenemos la dirección del cluster
-            $cluster_ip = $cluster->domain;
+            $cluster_ip = $bbdd_projects->domain;
 
 
             //Ahora que sabemos que proyecto es
             $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
             $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
-            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/delete-project.py" '.$cluster_ip." ".$web_project->name);
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/delete-project.py" '.$cluster_ip." ".$bbdd_projects->name);
             if($result!="b'ok'"){
                 return response()->json([
                     'status'=>$result,
@@ -214,15 +203,13 @@ class KubernetesBBDDController extends Controller
             //Crear log
             $log = log::create([
                 'user_id' => $user->id,
-                'description' => "Ticket accepted: '".$web_ticket->description."'",
+                'description' => "Ticket accepted: '".$bbdd_ticket->description."'",
             ]);
             //Actualizar la peticion
-            DB::table('web_tickets')
-            ->where('id', $request->web_ticket_id)
+            bbdd_tickets::where('id', $request->bbdd_ticket_id)
             ->update(['accepted' => true]);
 
         }
-        */
         return response()->json([
             'status'=>'success',
         ]);
@@ -339,5 +326,30 @@ class KubernetesBBDDController extends Controller
         return response()->json([
             'status'=>'success',
         ]);
+    }
+
+    //Se solicita con un ticket el borrado del proyecto BBDD
+    public function apply_delete_bbdd_project(Request $request)
+    {
+    $user = auth('api')->user();
+    $bbdd_projects=bbdd_projects::where('id', $request->bbdd_project_id)
+    ->where('workgroup_id', $user->workgroup_id)
+    ->first();
+
+    bbdd_tickets::create([
+        'action' => 2, //0 Crear //1 Replicas //2 Borrar
+        'description' => "Delete project '".$bbdd_projects->name."'",
+        'user_id' => $user->id,
+        'bbdd_project_id' => $request->bbdd_project_id,
+    ]);
+
+    //Guardar el log del proyecto creado
+    log::create([
+        'user_id' => $user->id,
+        'description' => "Requested to delete database project '".$bbdd_projects->name."'",
+    ]);
+    return response()->json([
+        'status'=>'success',
+    ]);
     }
 }
