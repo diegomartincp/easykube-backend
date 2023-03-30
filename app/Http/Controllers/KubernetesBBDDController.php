@@ -279,10 +279,31 @@ class KubernetesBBDDController extends Controller
     }
     public function get_bbdd_project(Request $request)
     {
-        $query=bbdd_projects::select('bbdd_projects.*' , 'clusters.name AS cluster_name')
+        //recuperamos la entrada del proyecto
+        $query=bbdd_projects::select('bbdd_projects.*' , 'clusters.name AS cluster_name','clusters.domain')
         ->join('clusters', 'bbdd_projects.cluster_id', '=', 'clusters.id')
         ->where('bbdd_projects.id', '=', $request->bbdd_project_id)
         ->first();
+
+        //Si la ip es None quiere decir que es un servidor on premise que no cuenta con IP
+        if($query->provider!="On-premises" && $query->ip!="None"){
+            //recoger la IP del servidor BBDD
+            $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
+            $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+
+            $ip = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/get-services-ip.py" '. $query->domain." ". $query->name);
+            $ip = substr($ip, 2);
+            $ip = substr($ip, 0,-1);
+            //Actualizamos la IP
+            $query=bbdd_projects::where('bbdd_projects.id', '=', $request->bbdd_project_id)->update(['ip' => $ip]);
+
+            //Volvemos a generar la llamada con la IP actualizada
+            $query=bbdd_projects::select('bbdd_projects.*' , 'clusters.name AS cluster_name','clusters.domain')
+            ->join('clusters', 'bbdd_projects.cluster_id', '=', 'clusters.id')
+            ->where('bbdd_projects.id', '=', $request->bbdd_project_id)
+            ->first();
+        }
+
         return $query;
     }
 
@@ -368,7 +389,7 @@ class KubernetesBBDDController extends Controller
         $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
         $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
 
-        //exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/postgres-backup.py" '.$bbdd_projects->domain." ".$bbdd_projects->name." ".$bbdd_projects->dbuser." ".$bbdd_projects->dbname);
+        exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/postgres-backup.py" '.$bbdd_projects->domain." ".$bbdd_projects->name." ".$bbdd_projects->dbuser." ".$bbdd_projects->dbname);
         $ruta=exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/TEST.py');
 
 

@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('dbname');
             $table->string('dbuser');
             $table->string('dbpwd');
+            $table->string('ip')->default("Pending");
             $table->integer('cluster_id')->references('id')->on('cluster');
             $table->integer('replicas')->default(1);
             $table->string('provider')->default(null);
