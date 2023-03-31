@@ -157,7 +157,7 @@ class KubernetesBBDDController extends Controller
                 'description' => "Ticket accepted: '".$bbdd_ticket->description."'",
             ]);
         }
-
+        /*
         //UPDATE REPLICAS
         if($bbdd_ticket->action==1){
 
@@ -189,7 +189,7 @@ class KubernetesBBDDController extends Controller
                 'description' => "Ticket accepted: '".$bbdd_ticket->description."'",
             ]);
         }
-
+        */
         //Borrar
         if($bbdd_ticket->action==2){
 
@@ -246,11 +246,12 @@ class KubernetesBBDDController extends Controller
         //if($result!="b'Created'"){Return $result;}
         if($result!="b'CreatedCreatedCreatedCreatedCreated'"){Return $result;}
 
+        /*
         #Crear HPA
         $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-hpa.py" ' . $query->domain." ".$query->name." ".$query->replicas);
         #if($result!="b'Created'"){Return "Error creating hpa";}
         if($result!="b'Created'"){Return $result;}
-
+        */
         return "Successfull";
 
 
@@ -333,7 +334,8 @@ class KubernetesBBDDController extends Controller
         return $result;
     }
 
-        //Esta función CREA UN TICKET para modificar el número de réplicas de un proyecto on premises
+    //Esta función CREA UN TICKET para modificar el número de réplicas de un proyecto on premises
+    /*
     public function apply_update_bbdd_replicas(Request $request)
     {
         $user = auth('api')->user();
@@ -355,6 +357,7 @@ class KubernetesBBDDController extends Controller
             'status'=>'success',
         ]);
     }
+    */
 
     //Se solicita con un ticket el borrado del proyecto BBDD
     public function apply_delete_bbdd_project(Request $request)

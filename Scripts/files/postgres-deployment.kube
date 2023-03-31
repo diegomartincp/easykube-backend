@@ -4,7 +4,7 @@ metadata:
   name: {{name}}-deployment # Set the name of the deployment
   namespace: default
 spec:
-  #replicas: 4 # Set 3 deployment replicas
+  #replicas: 1
   selector:
     matchLabels:
       app: {{name}}
@@ -28,7 +28,7 @@ spec:
           #Caracterísicas para el autoescalado
           resources:
               limits:
-                  cpu: 500m
+                  cpu: 2000m
               requests:
                   cpu: 100m
       volumes:
