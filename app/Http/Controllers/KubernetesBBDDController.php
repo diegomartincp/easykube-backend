@@ -146,6 +146,11 @@ class KubernetesBBDDController extends Controller
             bbdd_projects::where('id', $bbdd_ticket->bbdd_project_id)
             ->update(['aproved' => true]);
 
+            //Si el proyecto es on-premises, cambiamos la IP del proyecto a Localhost
+            if($bbdd_projects->provider=="On-premises"){
+               bbdd_projects::where('bbdd_projects.id', '=', $request->bbdd_project_id)->update(['ip' => 'Localhost']);
+            }
+
             //Crear log
             log::create([
                 'user_id' => $user->id,
@@ -286,7 +291,7 @@ class KubernetesBBDDController extends Controller
         ->first();
 
         //Si la ip es None quiere decir que es un servidor on premise que no cuenta con IP
-        if($query->provider!="On-premises" && $query->ip!="None"){
+        if($query->provider!="On-premises"){
             //recoger la IP del servidor BBDD
             $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
             $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
@@ -303,6 +308,7 @@ class KubernetesBBDDController extends Controller
             ->where('bbdd_projects.id', '=', $request->bbdd_project_id)
             ->first();
         }
+
 
         return $query;
     }
