@@ -93,6 +93,59 @@ class KubernetesBBDDController extends Controller
         }
     }
 
+    public function delete_bbdd_tickets(Request $request)
+    {
+        $user = auth('api')->user();
+        if($user->admin!=1){
+            return response()->json([
+                'forbidden',
+            ]);
+        }
+
+        //si el usuario es admin puede hacer cosas
+        //Recoger que ticket es
+        $query = bbdd_tickets::where('id', $request->bbdd_ticket_id)
+        ->first();
+
+        //Si no se encuentra ese ticket, se devuelve el error
+        if($query==null){
+            return response()->json([
+                'status'=>"BBDD ticket dont exist",
+            ]);
+        }
+
+        //Si es un ticket de crear un nuevo proyecto de BBDD
+        if($query->action==0){
+            //Actualizar la peticion
+            bbdd_tickets::where('id', $request->bbdd_ticket_id)
+            ->update(['declined' => true]);
+
+            //Actualizar el proyecto para eliminarlo pues no se ha llegado a ejecutar
+            bbdd_projects::where('id', $query->bbdd_project_id)
+            ->delete();
+
+            //Crear log
+            log::create([
+                'user_id' => $user->id,
+                'description' => "Deleted ticket: '".$query->description."'",
+            ]);
+        }
+        else{
+            //Actualizar la peticion
+            bbdd_tickets::where('id', $request->web_ticket_id)
+            ->update(['declined' => true]);
+
+            //Crear log
+           log::create([
+                'user_id' => $user->id,
+                'description' => "Deleted ticket: '".$query->description."'",
+            ]);
+        }
+        return response()->json([
+            'status'=>'success',
+        ]);
+    }
+
     public function accept_bbdd_tickets(Request $request)
     {
 
