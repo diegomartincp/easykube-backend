@@ -148,8 +148,6 @@ class KubernetesBBDDController extends Controller
 
     public function accept_bbdd_tickets(Request $request)
     {
-
-
         //Cromprobar si es administrador
         $user = auth('api')->user();
         if($user->admin!=1){
@@ -452,10 +450,10 @@ class KubernetesBBDDController extends Controller
         $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
 
         exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/postgres-backup.py" '.$bbdd_projects->domain." ".$bbdd_projects->name." ".$bbdd_projects->dbuser." ".$bbdd_projects->dbname);
-        $ruta=exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/TEST.py');
+        //$ruta=exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/TEST.py');
 
 
-        $file= public_path(). "/download/info.pdf";
+        //$file= public_path(). "/download/info.pdf";
 
         $headers = array(
                   'Content-Type: application/sql',
