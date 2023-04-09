@@ -132,7 +132,7 @@ class KubernetesBBDDController extends Controller
         }
         else{
             //Actualizar la peticion
-            bbdd_tickets::where('id', $request->web_ticket_id)
+            bbdd_tickets::where('id', $request->bbdd_ticket_id)
             ->update(['declined' => true]);
 
             //Crear log
