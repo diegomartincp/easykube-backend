@@ -358,6 +358,7 @@ class kubernetesController extends Controller
             ->select('web_tickets.*', 'users.name')
             ->where('accepted', 0)
             ->where('declined', 0)
+            ->where('users.workgroup_id', '=', $user->workgroup_id )
             ->orderBy('created_at','desc')->get();
             return $query;
         }
