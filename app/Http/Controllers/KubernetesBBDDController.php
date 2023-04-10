@@ -337,10 +337,12 @@ class KubernetesBBDDController extends Controller
     }
     public function get_bbdd_project(Request $request)
     {
+        $user = auth('api')->user();
         //recuperamos la entrada del proyecto
         $query=bbdd_projects::select('bbdd_projects.*' , 'clusters.name AS cluster_name','clusters.domain')
         ->join('clusters', 'bbdd_projects.cluster_id', '=', 'clusters.id')
         ->where('bbdd_projects.id', '=', $request->bbdd_project_id)
+        ->where('bbdd_projects.workgroup_id', '=', $user->workgroup_id)
         ->first();
 
         //Si la ip es None quiere decir que es un servidor on premise que no cuenta con IP
