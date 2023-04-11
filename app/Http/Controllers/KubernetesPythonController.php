@@ -15,7 +15,8 @@ class KubernetesPythonController extends Controller
     if ($request->hasFile('file'))
     {
             $file      = $request->file('file');
-            $filename  = $file->getClientOriginalName();
+            //$filename  = $file->getClientOriginalName();
+            $filename = "script.py";
             $extension = $file->getClientOriginalExtension();
             //$picture   = date('His').'-'.$filename;
             $picture   = $filename;
