@@ -1,10 +1,14 @@
 import subprocess
+import os
 
-ruta="/scripts/ejemplo1"
+#ruta="/scripts/ejemplo1"
+#in_file = os.getcwd()+"\\..\\Scripts\\files\\issuer-lets-encrypt-stagging.kube"
 
 #1 Extraer el requirements.txt
-command="pipreqs --force ./z"
+command="pipreqs --force .\..\public\scripts\ejemplo1"
 ret = subprocess.run(command, capture_output=True, shell=True)
+print(ret)
+exit()
 
 #2 Ejecutar el dockerfile
 command="docker build . -t script-test"

@@ -81,4 +81,4 @@ Route::controller(kubernetesBBDDController::class)->group(function () {
     Route::post('delete_bbdd_tickets', 'delete_bbdd_tickets');
 });
 
-Route::post('/upload_file', [App\Http\Controllers\KubernetesPythonController::class, 'uploadimage'])->name('/upload_files');
+Route::post('/upload_files', [App\Http\Controllers\KubernetesPythonController::class, 'upload_files'])->name('/upload_files');
