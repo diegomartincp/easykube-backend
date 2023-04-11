@@ -8,16 +8,13 @@ import requests
 
 
 
-#url_ek_controlplane = sys.argv[1]
-#name = sys.argv[2]
-#url = sys.argv[3]
-#token = sys.argv[4]
-#replicas = sys.argv[5]
+url_ek_controlplane = sys.argv[1]
+name = sys.argv[2]
+image = sys.argv[3]
 
-url_ek_controlplane="localhost:81"
-name="awebo7"
-puerto = "5000"
-image="test-1"
+#url_ek_controlplane="localhost:81"
+#name="awebo7"
+#image="test-1"
 
 
 
@@ -29,7 +26,7 @@ with open(in_file, 'r') as f:
     contenido = f.read()
 
 # Reemplazar la palabra deseada
-contenido = contenido.replace("{{puerto}}",puerto)
+
 contenido = contenido.replace("{{name}}",name)
 contenido = contenido.replace("{{image}}",image)
 

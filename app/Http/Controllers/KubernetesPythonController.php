@@ -15,6 +15,7 @@ class KubernetesPythonController extends Controller
     {
         $this->middleware('auth:api');
     }
+
     public function solicitar_python(Request $request)
     {
     //Recoger el usuario que hace la petición
@@ -92,6 +93,160 @@ class KubernetesPythonController extends Controller
         ]);
     }
 
+    public function get_python_tickets(Request $request)
+    {
+        $user = auth('api')->user();
+        if($user->admin==1){
+            $query = python_ticket::join('users', 'python_tickets.user_id', '=', 'users.id')
+            ->select('python_tickets.*', 'users.name')
+            ->where('accepted', 0)
+            ->where('declined', 0)
+            ->where('users.workgroup_id', '=', $user->workgroup_id )
+            ->orderBy('created_at','desc')->get();
+            return $query;
+        }
+        else{
+            return response()->json([
+                'forbidden',
+            ]);
+        }
+    }
+
+    public function accept_python_tickets(Request $request)
+    {
+        //Cromprobar si es administrador
+        $user = auth('api')->user();
+        if($user->admin!=1){
+            return response()->json([
+                'forbidden',
+            ]);
+        }
+        //si el usuario es admin puede hacer cosas
+
+        //Recoger el web ticket en base al id que se aporta en la petición
+        $python_ticket = python_ticket::where('id', $request->python_ticket_id)
+        ->first();
+
+        if($python_ticket==null){
+            return response()->json([
+                'status'=>"Python ticket dont exist",
+            ]);
+        }
+
+        //recogemos el proyecto y el cluster
+        $python_project = python_project::select("python_projects.*","clusters.domain")->where('python_projects.id',"=", $python_ticket->python_project_id)
+        ->join("clusters","python_projects.cluster_id","clusters.id")->first();
+
+        //Crear proyecto
+        if($python_ticket->action==0){
+            //Tenemos la dirección del cluster
+            $cluster_ip = $python_project->domain;
+
+            //El nombre de la imagen es el nombre del proyecto - workgroup
+            $nombre_imagen=$python_project->name."-".$user->workgroup_id;
+
+            //Coger variables
+            $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
+            $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+
+            //Crear deployment
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-python.py" '.$cluster_ip." ".$python_project->name." ".$nombre_imagen);
+            //Ver si hay error al crear el HPA
+            if($result!="b'CreatedCreated'"){
+                return response()->json([
+                    'status'=>$result,
+                ]);
+            }
+            //Crear HPA
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-hpa.py" ' . $cluster_ip." ".$python_project->name." ".$python_project->replicas);
+            //Ver si hay error al crear el HPA
+            if($result!="b'Created'"){
+                return response()->json([
+                    'status'=>$result,
+                ]);
+            }
+
+            //Actualizar la peticion
+            python_ticket::where('id', $request->python_ticket_id)
+            ->update(['accepted' => true]);
+
+            //Actualizar el web project
+            python_project::where('id', $python_ticket->python_project_id)
+            ->update(['aproved' => true]);
+
+            //Crear log
+            log::create([
+                'user_id' => $user->id,
+                'description' => "Ticket accepted: '".$python_ticket->description."'",
+            ]);
+        }
+        /*
+        //UPDATE REPLICAS
+        if($bbdd_ticket->action==1){
+
+            //Tenemos la dirección del cluster
+            $cluster_ip = $bbdd_projects->domain;
+
+            //Actualizar las replicas
+            #Coger variables
+            $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
+            $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/update-replicas.py" '.$cluster_ip." ".$bbdd_projects->name." ".$bbdd_ticket->replicas);
+            if($result!="b'success'"){
+                return response()->json([
+                    'status'=>$result,
+                ]);
+            }
+
+            //Actualizar la peticion
+            bbdd_tickets::where('id', $request->bbdd_ticket_id)
+            ->update(['accepted' => true]);
+
+            //Actualizar el web project
+            bbdd_projects::where('id', $bbdd_ticket->bbdd_project_id)
+            ->update(['replicas' => $bbdd_ticket->replicas]);
+
+            //Crear log
+            log::create([
+                'user_id' => $user->id,
+                'description' => "Ticket accepted: '".$bbdd_ticket->description."'",
+            ]);
+        }
+        */
+        //Borrar
+        /*
+        if($bbdd_ticket->action==2){
+
+            //Tenemos la dirección del cluster
+            $cluster_ip = $bbdd_projects->domain;
+
+
+            //Ahora que sabemos que proyecto es
+            $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
+            $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/delete-project.py" '.$cluster_ip." ".$bbdd_projects->name);
+            if($result!="b'ok'"){
+                return response()->json([
+                    'status'=>$result,
+                ]);
+            }
+            //Crear log
+            $log = log::create([
+                'user_id' => $user->id,
+                'description' => "Ticket accepted: '".$bbdd_ticket->description."'",
+            ]);
+            //Actualizar la peticion
+            bbdd_tickets::where('id', $request->bbdd_ticket_id)
+            ->update(['accepted' => true]);
+
+        }
+        */
+        return response()->json([
+            'status'=>'success',
+        ]);
+
+    }
+    //EJEMPLO
     //File Upload Function
     public function upload_files(Request $request)
     {

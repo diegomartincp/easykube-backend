@@ -19,4 +19,10 @@ spec:
       - name: {{name}}-container
         image: diegomartinc/{{image}}:latest
         ports:
-        - containerPort: {{puerto}}
+        - containerPort: 5000
+        #Caracterísicas para el autoescalado
+        resources:
+            limits:
+                cpu: 500m
+            requests:
+                cpu: 100m

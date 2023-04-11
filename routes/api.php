@@ -86,4 +86,6 @@ Route::post('/upload_files', [App\Http\Controllers\KubernetesPythonController::c
 
 Route::controller(KubernetesPythonController::class)->group(function () {
     Route::post('solicitar_python', 'solicitar_python');
+    Route::get('get_python_tickets', 'get_python_tickets');
+    Route::post('accept_python_tickets', 'accept_python_tickets');
 });
