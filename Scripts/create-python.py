@@ -15,7 +15,7 @@ import requests
 #replicas = sys.argv[5]
 
 url_ek_controlplane="localhost:81"
-name="awebo6"
+name="awebo7"
 puerto = "5000"
 image="test-1"
 
@@ -64,5 +64,5 @@ with open('temp.yaml', 'rb') as f:
     r2 = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
     print(r.content+r2.content)
 
-#os.remove('temp.yaml')
+os.remove('temp.yaml')
 
