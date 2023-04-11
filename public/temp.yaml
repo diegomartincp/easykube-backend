@@ -1,13 +1,22 @@
-apiVersion: v1
-kind: Service
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: awebo6-service
+  name: awebo7-deployment
   namespace: default
   labels:
-    app: awebo6
+    app: awebo7
 spec:
-  type: LoadBalancer
-  ports:
-    - port: 5000
+  replicas: 1
   selector:
-    app: awebo6
+    matchLabels:
+      app: awebo7
+  template:
+    metadata:
+      labels:
+        app: awebo7
+    spec:
+      containers:
+      - name: awebo7-container
+        image: diegomartinc/test-1:latest
+        ports:
+        - containerPort: 5000

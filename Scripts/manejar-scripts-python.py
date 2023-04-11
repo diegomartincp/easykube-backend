@@ -1,9 +1,11 @@
 import subprocess
-import os
+import sys
 import shutil
 
-name="test"
-workgroup_id="1"
+name = sys.argv[1]
+workgroup_id = sys.argv[2]
+#name="test"
+#workgroup_id="1"
 
 #1 Copiar el fichero a la nueva ruta donde crearemos la iamgen con el dockerfile
 shutil.copy2('.\..\public\scripts\ejemplo1\script.py', '.\..\Scripts\image_creation\script.py')

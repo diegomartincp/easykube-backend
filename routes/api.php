@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\kubernetesController;
 use App\Http\Controllers\kubernetesBBDDController;
+use App\Http\Controllers\KubernetesPythonController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController; //Para autenticar
@@ -82,3 +83,7 @@ Route::controller(kubernetesBBDDController::class)->group(function () {
 });
 
 Route::post('/upload_files', [App\Http\Controllers\KubernetesPythonController::class, 'upload_files'])->name('/upload_files');
+
+Route::controller(KubernetesPythonController::class)->group(function () {
+    Route::post('solicitar_python', 'solicitar_python');
+});
