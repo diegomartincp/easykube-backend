@@ -1,12 +1,10 @@
-import os
-import sys
-import requests
+from flask import Flask, request, send_file
+app = Flask(__name__)
 
+@app.route("/hola")
+def info():
+    return "hola"
 
-#url_ek_controlplane = sys.argv[1]
-#deployment = sys.argv[2]
-#replicas = sys.argv[3]
-
-
-print(os.getcwd())
-
+if __name__ == '__main__':
+    #app.run(host='0.0.0.0',ssl_context='adhoc')
+    app.run(host='0.0.0.0')
