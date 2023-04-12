@@ -77,7 +77,7 @@ class KubernetesPythonController extends Controller
         //5 Crear el ticket con la solicitud
         python_ticket::create([
             'action' => 0, //0 Crear //1 Replicas //2 Borrar
-            'description' => "Create python project project ".$request->get('name'),
+            'description' => "Create python project ".$request->get('name'),
             'user_id' => $user->id,
             'python_project_id' => $proyecto->id,
         ]);
@@ -180,18 +180,17 @@ class KubernetesPythonController extends Controller
                 'description' => "Ticket accepted: '".$python_ticket->description."'",
             ]);
         }
-        /*
-        //UPDATE REPLICAS
-        if($bbdd_ticket->action==1){
 
+        //UPDATE REPLICAS
+        if($python_ticket->action==1){
             //Tenemos la dirección del cluster
-            $cluster_ip = $bbdd_projects->domain;
+            $cluster_ip = $python_project->domain;
 
             //Actualizar las replicas
             #Coger variables
             $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
             $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
-            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/update-replicas.py" '.$cluster_ip." ".$bbdd_projects->name." ".$bbdd_ticket->replicas);
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/update-replicas.py" '.$cluster_ip." ".$python_project->name." ".$python_ticket->replicas);
             if($result!="b'success'"){
                 return response()->json([
                     'status'=>$result,
@@ -199,20 +198,20 @@ class KubernetesPythonController extends Controller
             }
 
             //Actualizar la peticion
-            bbdd_tickets::where('id', $request->bbdd_ticket_id)
+            python_ticket::where('id', $request->python_ticket_id)
             ->update(['accepted' => true]);
 
             //Actualizar el web project
-            bbdd_projects::where('id', $bbdd_ticket->bbdd_project_id)
-            ->update(['replicas' => $bbdd_ticket->replicas]);
+            python_project::where('id', $python_ticket->python_project_id)
+            ->update(['replicas' => $python_ticket->replicas]);
 
             //Crear log
             log::create([
                 'user_id' => $user->id,
-                'description' => "Ticket accepted: '".$bbdd_ticket->description."'",
+                'description' => "Ticket accepted: '".$python_ticket->description."'",
             ]);
         }
-        */
+
         //Borrar
         /*
         if($bbdd_ticket->action==2){
@@ -348,6 +347,29 @@ class KubernetesPythonController extends Controller
         $result = substr($result, 0,-1);
 
         return $result;
+    }
+
+    //Esta función CREA UN TICKET para modificar el número de réplicas
+    public function apply_update_python_replicas(Request $request)
+    {
+    $user = auth('api')->user();
+    #Se crea el ticket
+    python_ticket::create([
+        'action' => 1, //0 Crear //1 Replicas //2 Borrar
+        'replicas' => $request->replicas,
+        'description' => "Update replicas up to ".$request->replicas." for project '".$request->project_name."'",
+        'user_id' => $user->id,
+        'python_project_id' => $request->python_project_id,
+    ]);
+    //Se crea un log
+    log::create([
+        'user_id' => $user->id,
+        'description' => "Requested Update replicas up to ".$request->replicas." for project '".$request->project_name."'",
+    ]);
+    //se responde con el mensaje de aceptación
+    return response()->json([
+        'status'=>'success',
+    ]);
     }
     //aaaaaaaaaaaaaaaaaaaaaaaa
     public function crear_imagen(string $filename,string $ruta)
