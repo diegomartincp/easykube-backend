@@ -246,39 +246,58 @@ class KubernetesPythonController extends Controller
         ]);
 
     }
-    //EJEMPLO
-    //File Upload Function
-    public function upload_files(Request $request)
-    {
-    if ($request->hasFile('file'))
-    {
-            $file      = $request->file('file');
-            //$filename  = $file->getClientOriginalName();
-            $filename = "script.py";
-            $extension = $file->getClientOriginalExtension();
-            //$picture   = date('His').'-'.$filename;
-            $picture   = $filename;
-            //Se guarda el script en la carpeta /public/scripts
-            $ruta='scripts/ejemplo1';
-            $file->move(public_path($ruta), $picture);
 
-            //CCrear la imagen y subirla a dockerhub
-            $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
-            $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
-            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/manejar-scripts-python.py" ');
-            /*return response()->json([
-                'status'=>$result,
-            ]);*/
-            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-python.py" ');
-            return response()->json([
-                'status'=>$result,
-            ]);
-            return response()->json(["message" => "Image Uploaded Succesfully"]);
-    }
-    else
+    public function delete_python_tickets(Request $request)
     {
-            return response()->json(["message" => "Select image first."]);
-    }
+        $user = auth('api')->user();
+        if($user->admin!=1){
+            return response()->json([
+                'forbidden',
+            ]);
+        }
+
+        //si el usuario es admin puede hacer cosas
+        //Recoger que ticket es
+        $query = python_ticket::where('id', $request->python_ticket_id)
+        ->first();
+
+        //Si no se encuentra ese ticket, se devuelve el error
+        if($query==null){
+            return response()->json([
+                'status'=>"Python ticket dont exist",
+            ]);
+        }
+
+        //Si es un ticket de crear un nuevo proyecto de BBDD
+        if($query->action==0){
+            //Actualizar la peticion
+            python_ticket::where('id', $request->python_ticket_id)
+            ->update(['declined' => true]);
+
+            //Actualizar el proyecto para eliminarlo pues no se ha llegado a ejecutar
+            python_project::where('id', $query->python_project_id)
+            ->delete();
+
+            //Crear log
+            log::create([
+                'user_id' => $user->id,
+                'description' => "Deleted ticket: '".$query->description."'",
+            ]);
+        }
+        else{
+            //Actualizar la peticion
+            python_ticket::where('id', $request->python_ticket_id)
+            ->update(['declined' => true]);
+
+            //Crear log
+           log::create([
+                'user_id' => $user->id,
+                'description' => "Deleted ticket: '".$query->description."'",
+            ]);
+        }
+        return response()->json([
+            'status'=>'success',
+        ]);
     }
 
     public function crear_imagen(string $filename,string $ruta)
