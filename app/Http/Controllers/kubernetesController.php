@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\bbdd_projects;
 use App\Models\cluster;
+use App\Models\python_project;
 use App\Models\web_project;
 use App\Models\web_ticket;
 use Illuminate\Http\Request;
@@ -169,6 +170,13 @@ class kubernetesController extends Controller
                 ->where('active', 1)
                 ->first();
 
+                //Verificar si es proyecto python
+                $espython = python_project::where('python_projects.name', '=', $nombre )
+                ->select('clusters.*', 'python_projects.*')
+                ->join('clusters', 'python_projects.cluster_id', '=', 'clusters.id')
+                ->where('active', 1)
+                ->first();
+
 
 
                 //!!!!!!!!VERIFICAR AQUI SI ES UN PROYECTO DE BBDD O FLASK DE LA TABLA QUE CREE EN SU MOMENTO IGUAL QUE ARRIBA
@@ -176,7 +184,7 @@ class kubernetesController extends Controller
                 if($nombre=="easykube-controlplane"){
                     $temp->from_app = True;
                 }
-                else if ($query === null && $esbbdd === null) {
+                else if ($query === null && $esbbdd === null && $espython === null) {
                     //No es una carga de trabajo de easykube
                     $temp->from_app = False;
                 }
@@ -187,10 +195,16 @@ class kubernetesController extends Controller
                     $temp->query = $query;
                 }
                 else if($esbbdd !== null){
-                    //Si es carga web
+                    //Si es carga de base de datos
                     $temp->from_app = True;
                     $temp->bbdd_project_id = $esbbdd->id;
                     $temp->esbbdd = $esbbdd;
+                }
+                else if($espython !== null){
+                    //Si es carga de python
+                    $temp->from_app = True;
+                    $temp->python_project_id = $espython->id;
+                    $temp->espython = $espython;
                 }
 
                 $escritura->$flag = $temp;
