@@ -89,5 +89,5 @@ Route::controller(KubernetesPythonController::class)->group(function () {
     Route::get('get_python_tickets', 'get_python_tickets');
     Route::post('accept_python_tickets', 'accept_python_tickets');
     Route::post('delete_python_tickets', 'delete_python_tickets');
-
+    Route::post('get_python_project', 'get_python_project');
 });
