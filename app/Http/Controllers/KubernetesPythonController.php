@@ -330,6 +330,25 @@ class KubernetesPythonController extends Controller
         return $query;
     }
 
+    public function python_project_health(Request $request)
+    {
+        $user = auth('api')->user();
+        //Recogemos la información del proyecto
+        $python_project=python_project::select('python_projects.*','clusters.domain')
+        ->join('clusters', 'python_projects.cluster_id', '=', 'clusters.id')
+        ->where('python_projects.id', $request->python_project_id)
+        ->where('python_projects.workgroup_id', $user->workgroup_id)
+        ->first();
+
+        $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
+        $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+
+        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/project-health.py" '. $python_project->domain." ". $python_project->name);
+        $result = substr($result, 2);
+        $result = substr($result, 0,-1);
+
+        return $result;
+    }
     //aaaaaaaaaaaaaaaaaaaaaaaa
     public function crear_imagen(string $filename,string $ruta)
     {
