@@ -92,4 +92,5 @@ Route::controller(KubernetesPythonController::class)->group(function () {
     Route::post('get_python_project', 'get_python_project');
     Route::post('python_project_health', 'python_project_health');
     Route::post('apply_update_python_replicas', 'apply_update_python_replicas');
+    Route::post('solicitar_actualizacion_imagen', 'solicitar_actualizacion_imagen');
 });

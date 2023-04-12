@@ -371,7 +371,46 @@ class KubernetesPythonController extends Controller
         'status'=>'success',
     ]);
     }
-    //aaaaaaaaaaaaaaaaaaaaaaaa
+
+    public function solicitar_actualizacion_imagen(Request $request){
+        //Si contiene imagen
+        if ($request->hasFile('file')){
+            //Crear nuevo ticket solicitando la actualización
+
+            $user = auth('api')->user();
+            #Se crea el ticket
+            $ticket_creado=python_ticket::create([
+                'action' => 3, //0 Crear //1 Replicas //2 Borrar //3 Actualizar imagen
+                'replicas' => 0,
+                'description' => "Update python sript to new version for project '".$request->project_name."'",
+                'user_id' => $user->id,
+                'python_project_id' => $request->python_project_id,
+            ]);
+            //Se crea un log
+            log::create([
+                'user_id' => $user->id,
+                'description' => "Requested update python sript to new version for project '".$request->project_name."'",
+            ]);
+
+
+
+            //Guardar el fichero
+            $file      = $request->file('file');
+            $filename = $ticket_creado->id."-script.py";
+            $extension = $file->getClientOriginalExtension();
+            $picture   = $filename;
+            $ruta='scripts/ejemplo1';
+            $file->move(public_path($ruta), $picture);
+
+            return response()->json(["status" => 'success']);
+
+        }else{
+            //Si no contiene el fichero, se devuelve el error
+            return response()->json(["status" => "No file"]);
+        }
+    }
+
+    /*
     public function crear_imagen(string $filename,string $ruta)
     {
         $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
@@ -381,5 +420,5 @@ class KubernetesPythonController extends Controller
             'status'=>$result,
         ]);
 
-    }
+    }*/
 }
