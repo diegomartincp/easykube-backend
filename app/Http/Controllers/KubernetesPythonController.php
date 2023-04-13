@@ -8,6 +8,7 @@ use App\Models\log;
 use App\Models\python_project;
 use App\Models\python_ticket;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 
 class KubernetesPythonController extends Controller
 {
@@ -21,8 +22,29 @@ class KubernetesPythonController extends Controller
     //Recoger el usuario que hace la petición
     $user = auth('api')->user();
 
-    //Antes de nada hay que verificar si la request contiene el fichero con el script
+    //1 Buscar ese cluster que id tiene
+    $cluster = cluster::where('name', '=', $request->get('cluster'))->
+    where('workgroup_id', '=', $user->workgroup_id )->first();
+
+    if($cluster==null){
+        return response()->json([
+            'status' => 'cluster not found',
+        ]);
+    }
+
+    //2 Vemos si el proyecto ya existe
+    $query = python_project::where('name', '=', $request->get('name') )->where('cluster_id', '=', $cluster->id )->first();
+
+    if($query!=null){
+        //Si existe se devuelve el error
+        return response()->json([
+            'status' => 'exists',
+        ]);
+    }
+
+    //3 Antes de nada hay que verificar si la request contiene el fichero con el script
     if ($request->hasFile('file')){
+        //Guardar el fichero
         $file      = $request->file('file');
         $filename = "script.py";
         $extension = $file->getClientOriginalExtension();
@@ -33,33 +55,13 @@ class KubernetesPythonController extends Controller
         //CCrear la imagen y subirla a dockerhub
         $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
         $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
-        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/manejar-scripts-python.py" '.$request->get('name')." ".$user->workgroup_id);
+        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/manejar-scripts-python.py" '.$request->get('name')." ".$user->workgroup_id." script.py");
     }else{
         //Si no contiene el fichero, se devuelve el error
         return response()->json(["status" => "No file"]);
     }
 
         //Una vez se crea la imagen correctamente, pasamos a crear la solicitud
-
-        //1 Buscar ese cluster que id tiene
-        $cluster = cluster::where('name', '=', $request->get('cluster'))->
-        where('workgroup_id', '=', $user->workgroup_id )->first();
-
-        if($cluster==null){
-            return response()->json([
-                'status' => 'cluster not found',
-            ]);
-        }
-
-        //2 Vemos si el proyecto ya existe
-        $query = python_project::where('name', '=', $request->get('name') )->where('cluster_id', '=', $cluster->id )->first();
-
-        if($query!=null){
-            //Si existe se devuelve el error
-            return response()->json([
-                'status' => 'exists',
-            ]);
-        }
 
         //3 AÑADIR EN BBDD el nuevo proyecto
         python_project::create([
@@ -213,17 +215,17 @@ class KubernetesPythonController extends Controller
         }
 
         //Borrar
-        /*
-        if($bbdd_ticket->action==2){
+
+        if($python_ticket->action==2){
 
             //Tenemos la dirección del cluster
-            $cluster_ip = $bbdd_projects->domain;
+            $cluster_ip = $python_project->domain;
 
 
             //Ahora que sabemos que proyecto es
             $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
             $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
-            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/delete-project.py" '.$cluster_ip." ".$bbdd_projects->name);
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/delete-project.py" '.$cluster_ip." ".$python_project->name);
             if($result!="b'ok'"){
                 return response()->json([
                     'status'=>$result,
@@ -232,14 +234,39 @@ class KubernetesPythonController extends Controller
             //Crear log
             $log = log::create([
                 'user_id' => $user->id,
-                'description' => "Ticket accepted: '".$bbdd_ticket->description."'",
+                'description' => "Ticket accepted: '".$python_ticket->description."'",
             ]);
             //Actualizar la peticion
-            bbdd_tickets::where('id', $request->bbdd_ticket_id)
+            python_ticket::where('id', $request->python_ticket_id)
             ->update(['accepted' => true]);
 
         }
-        */
+
+        //Modificar los script que se ejecutan en un proyecto python
+        if($python_ticket->action==3){
+            //Crear la imagen y subirla a dockerhub
+            $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
+            $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/manejar-scripts-python.py" '.$python_project->name." ".$user->workgroup_id." ".$python_ticket->id."-script.py");
+
+            //Achora hay que reiniciar los pods para que carguen la nueva imagen
+            $cluster_ip = $python_project->domain;
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/restart-pods.py" '.$cluster_ip." ".$python_project->name);
+
+            if($result!="b'success'"){
+                return $result;
+            }
+
+            //Actualizar la peticion
+            python_ticket::where('id', $request->python_ticket_id)
+            ->update(['accepted' => true]);
+
+            //Crear log
+            log::create([
+                'user_id' => $user->id,
+                'description' => "Ticket accepted: '".$python_ticket->description."'",
+            ]);
+        }
         return response()->json([
             'status'=>'success',
         ]);
@@ -276,6 +303,21 @@ class KubernetesPythonController extends Controller
             //Actualizar el proyecto para eliminarlo pues no se ha llegado a ejecutar
             python_project::where('id', $query->python_project_id)
             ->delete();
+
+            //Crear log
+            log::create([
+                'user_id' => $user->id,
+                'description' => "Deleted ticket: '".$query->description."'",
+            ]);
+        }
+        //Si es la actualiazción del script hay que borrar el fichero del servidor
+        else if($query->action==3){
+            //Eliminar el fichero
+            File::delete("scripts/ejemplo1/".$query->id."-script.py");
+
+            //Actualizar la peticion
+            python_ticket::where('id', $request->python_ticket_id)
+            ->update(['declined' => true]);
 
             //Crear log
             log::create([
@@ -355,7 +397,7 @@ class KubernetesPythonController extends Controller
     $user = auth('api')->user();
     #Se crea el ticket
     python_ticket::create([
-        'action' => 1, //0 Crear //1 Replicas //2 Borrar
+        'action' => 1, //0 Crear //1 Replicas //2 Borrar //3 Actualizar imagen
         'replicas' => $request->replicas,
         'description' => "Update replicas up to ".$request->replicas." for project '".$request->project_name."'",
         'user_id' => $user->id,
@@ -373,6 +415,14 @@ class KubernetesPythonController extends Controller
     }
 
     public function solicitar_actualizacion_imagen(Request $request){
+        $user = auth('api')->user();
+
+        //Recoger el proyecto en base a su id
+        $python_project=python_project::select('*')
+        ->where('python_projects.id', $request->python_project_id)
+        ->where('python_projects.workgroup_id', $user->workgroup_id)
+        ->first();
+
         //Si contiene imagen
         if ($request->hasFile('file')){
             //Crear nuevo ticket solicitando la actualización
@@ -382,14 +432,14 @@ class KubernetesPythonController extends Controller
             $ticket_creado=python_ticket::create([
                 'action' => 3, //0 Crear //1 Replicas //2 Borrar //3 Actualizar imagen
                 'replicas' => 0,
-                'description' => "Update python sript to new version for project '".$request->project_name."'",
+                'description' => "Update python sript to new version for project '".$python_project->name."'",
                 'user_id' => $user->id,
                 'python_project_id' => $request->python_project_id,
             ]);
             //Se crea un log
             log::create([
                 'user_id' => $user->id,
-                'description' => "Requested update python sript to new version for project '".$request->project_name."'",
+                'description' => "Requested update python script to a new version for project '".$python_project->name."'",
             ]);
 
 
@@ -410,15 +460,28 @@ class KubernetesPythonController extends Controller
         }
     }
 
-    /*
-    public function crear_imagen(string $filename,string $ruta)
-    {
-        $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
-        $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
-        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/manejar-scripts-python.py" ');
-        return response()->json([
-            'status'=>$result,
-        ]);
 
-    }*/
+    public function apply_delete_python_project(Request $request)
+    {
+    $user = auth('api')->user();
+    $python_project=python_project::where('id', $request->python_project_id)
+    ->where('workgroup_id', $user->workgroup_id)
+    ->first();
+
+    python_ticket::create([
+        'action' => 2, //0 Crear //1 Replicas //2 Borrar
+        'description' => "Delete project '".$python_project->name."'",
+        'user_id' => $user->id,
+        'python_project_id' => $request->python_project_id,
+    ]);
+
+    //Guardar el log del proyecto creado
+    log::create([
+        'user_id' => $user->id,
+        'description' => "Requested to delete python project '".$python_project->name."'",
+    ]);
+    return response()->json([
+        'status'=>'success',
+    ]);
+    }
 }

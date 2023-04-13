@@ -1,14 +1,16 @@
 import subprocess
 import sys
 import shutil
+import os
 
 name = sys.argv[1]
 workgroup_id = sys.argv[2]
-#name="test"
+filename= sys.argv[3]
 #workgroup_id="1"
 
-#1 Copiar el fichero a la nueva ruta donde crearemos la iamgen con el dockerfile
-shutil.copy2('.\..\public\scripts\ejemplo1\script.py', '.\..\Scripts\image_creation\script.py')
+#1 Copiar el fichero a la nueva ruta donde crearemos la iamgen con el dockerfile y borrarlo
+shutil.copy2(".\\..\\public\\scripts\\ejemplo1\\"+filename , ".\\..\\Scripts\\image_creation\\script.py")
+os.remove(".\\..\\public\\scripts\\ejemplo1\\"+filename)
 
 #2 Extraer el requirements.txt
 command="pipreqs --force .\..\Scripts\image_creation"
