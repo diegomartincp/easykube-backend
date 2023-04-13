@@ -14,6 +14,7 @@ class python_project extends Model
         'aproved',
         'provider',
         'replicas',
+        'port',
         'workgroup_id',
         'cluster_id',
     ];

@@ -69,6 +69,7 @@ class KubernetesPythonController extends Controller
             'description'=>$request->get('description'),
             'aproved'=>False,
             'replicas'=>$request->get('replicas'),
+            'port'=>$request->get('port'),
             'workgroup_id'=>$user->workgroup_id,
             'cluster_id'=>$cluster->id
         ]);
@@ -152,7 +153,7 @@ class KubernetesPythonController extends Controller
             $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
 
             //Crear deployment
-            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-python.py" '.$cluster_ip." ".$python_project->name." ".$nombre_imagen);
+            $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-python.py" '.$cluster_ip." ".$python_project->name." ".$nombre_imagen." ".$python_project->port);
             //Ver si hay error al crear el HPA
             if($result!="b'CreatedCreated'"){
                 return response()->json([

@@ -11,6 +11,7 @@ import requests
 url_ek_controlplane = sys.argv[1]
 name = sys.argv[2]
 image = sys.argv[3]
+port = sys.argv[4]
 
 #url_ek_controlplane="localhost:81"
 #name="awebo7"
@@ -50,6 +51,7 @@ with open(srvfile, 'r') as f:
 
 # Reemplazar la palabra deseada
 contenido = contenido.replace("{{name}}",name)
+contenido = contenido.replace("{{port}}",port)
 
 # Abrir el archivo de destino para escritura
 with open('temp.yaml', 'w') as f:
