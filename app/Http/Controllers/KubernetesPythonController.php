@@ -352,21 +352,28 @@ class KubernetesPythonController extends Controller
         ->where('python_projects.workgroup_id', '=', $user->workgroup_id)
         ->first();
         if($query->aproved==true){
-        //recoger la IP del servidor python
-        $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
-        $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+            try {
+                //recoger la IP del servidor python
+                $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
+                $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
 
-        $ip = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/get-services-ip.py" '. $query->domain." ". $query->name);
-        $ip = substr($ip, 2);
-        $ip = substr($ip, 0,-1);
-        //Actualizamos la IP
-        $query=python_project::where('python_projects.id', '=', $request->python_project_id)->update(['ip' => $ip]);
+                $ip = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/get-services-ip.py" '. $query->domain." ". $query->name);
+                $ip = substr($ip, 2);
+                $ip = substr($ip, 0,-1);
+                //Actualizamos la IP
+                $query=python_project::where('python_projects.id', '=', $request->python_project_id)->update(['ip' => $ip]);
 
-        //Volvemos a generar la llamada con la IP actualizada
-        $query=python_project::select('python_projects.*' , 'clusters.name AS cluster_name','clusters.domain')
-        ->join('clusters', 'python_projects.cluster_id', '=', 'clusters.id')
-        ->where('python_projects.id', '=', $request->python_project_id)
-        ->first();
+                //Volvemos a generar la llamada con la IP actualizada
+                $query=python_project::select('python_projects.*' , 'clusters.name AS cluster_name','clusters.domain')
+                ->join('clusters', 'python_projects.cluster_id', '=', 'clusters.id')
+                ->where('python_projects.id', '=', $request->python_project_id)
+                ->first();
+            } catch (\Throwable $th) {
+                return response()->json([
+                    'status'=>'pending',
+                ]);
+            }
+
         }
 
         return $query;
