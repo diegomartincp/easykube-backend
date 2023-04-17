@@ -16,6 +16,13 @@ class KubernetesBBDDController extends Controller
     {
         $this->middleware('auth:api');
     }
+
+    /**
+     * Este método permite a un usuario crear un ticket donde se solicita la creación de
+     * un proyecto con una base de datos.
+     * También se registra un nuevo proyecto de base de datos con sus características y un
+     * log de la realización de la solicitud.
+     */
     public function solicitar_bbdd(Request $request)
     {
         $user = auth('api')->user();
@@ -75,6 +82,10 @@ class KubernetesBBDDController extends Controller
         ]);
     }
 
+    /**
+     * Este método devuelve un array con todos los tickets de proyectos web que aún no han sido ni
+     * aceptados ni rechazados.
+     */
     public function get_bbdd_tickets(Request $request)
     {
         $user = auth('api')->user();
@@ -94,6 +105,12 @@ class KubernetesBBDDController extends Controller
         }
     }
 
+    /**
+     * Este método rechaza un ticket de un proyecto de bases de datos alterando el atributo “declined”
+     * en la base de datos.
+     * En caso de que la petición que se desea rechazar sea para crear un nuevo proyecto, a demás de
+     * alterar este campo se elimina la entrada correspondiente de la tabla bbdd_projects.
+     */
     public function delete_bbdd_tickets(Request $request)
     {
         $user = auth('api')->user();
@@ -147,6 +164,20 @@ class KubernetesBBDDController extends Controller
         ]);
     }
 
+    /**
+     * Este método se encarga de realizar las gestiones necesarias cuando el administrador acepta
+     * un ticket de un proyecto de base de datos. Se fija en el campo “action” del ticket y según
+     * su valor realiza la acción correspondiente:
+     * 0.	Es un ticket para crear un nuevo proyecto. Según si es on-premises o en GCP ejecutará
+     * respectivamente los métodos deploy_bbdd_projects o deploy_bbdd_projects_gke para ejecutar
+     * las automatizaciones que levantan las cargas de trabajo
+     * 1.	* Puesto que para este tipo de proyectos no se puede manejar el número de réplicas y
+     * para mantener el mismo estándar en los tickets de los diferentes tipos de proyecto, no se controla este caso
+     * 2.	Es un ticket para eliminar un proyecto. Se ejecuta la automatización que lo elimina
+     * y se marca en la entrada del proyecto como no activo
+     *
+     * En cualquiera de los casos se crea también un log recogiendo el cambio realizado.
+     */
     public function accept_bbdd_tickets(Request $request)
     {
         //Cromprobar si es administrador
@@ -273,6 +304,11 @@ class KubernetesBBDDController extends Controller
         ]);
 
     }
+    /**
+     * Este método ejecuta las automatizaciones para levantar un proyecto de base de datos
+     * on-premises en base al id del proyecto que recibe como parámetro.
+     * Para hacer esto ejecuta el script create-bbdd.py
+     */
     public function deploy_bbdd_projects(int $bbdd_project_id){
         //Ver que proyecto es en la base de datos
         $user = auth('api')->user();
@@ -308,6 +344,12 @@ class KubernetesBBDDController extends Controller
 
 
     }
+
+    /**
+     * Este método ejecuta las automatizaciones para levantar un proyecto de base de
+     * datos en Google Cloud Platform a partir del id del proyecto que recibe como parámetro.
+     * Para hacer esto ejecuta el script create-bbdd-gke.py
+     */
     public function deploy_bbdd_projects_gke(int $bbdd_project_id){
         //Ver que proyecto es en la base de datos
         $user = auth('api')->user();
@@ -335,6 +377,13 @@ class KubernetesBBDDController extends Controller
 
         return "Successfull";
     }
+
+    /**
+     * Este método devuelve la información almacenada en la base de datos para un proyecto
+     * de base de datos y el clúster en el que se ejecuta. Si el proyecto no es on-premises
+     * ejecuta el script get-services-ip.py que devuelve la ip pública en la que se está
+     * ejecutando el servicio con la base de datos en la nube.
+     */
     public function get_bbdd_project(Request $request)
     {
         $user = auth('api')->user();
@@ -368,6 +417,12 @@ class KubernetesBBDDController extends Controller
         return $query;
     }
 
+    /**
+     * Devuelve la salud del id del proyecto que recibe como parámetro haciendo uso del
+     * script project-health.py que ejecuta las automatizaciones para recuperar el número
+     * de réplicas que se están ejecutando para dicho proyecto en el clúster, y el número
+     * esperado de réplicas.
+     */
     public function bbdd_project_health(Request $request)
     {
         $user = auth('api')->user();
@@ -413,7 +468,10 @@ class KubernetesBBDDController extends Controller
     }
     */
 
-    //Se solicita con un ticket el borrado del proyecto BBDD
+    /**
+     * Crea un ticket donde se solicita el borrado de un proyecto junto con un log
+     * donde se registra la petición.
+     */
     public function apply_delete_bbdd_project(Request $request)
     {
     $user = auth('api')->user();
@@ -438,6 +496,11 @@ class KubernetesBBDDController extends Controller
     ]);
     }
 
+    /**
+     * Ejecuta las automatizaciones para crear un backup de una base de datos en el clúster,
+     * guardarla en el servidor back-end mediante la ejecución del script postgres-backup.py
+     * Posteriormente devuelve el fichero con el backup en formato sql como respuesta a la petición.
+     */
     public function postgres_backup(Request $request)
     {
         //En base al usuario accedemos a la información del proyecto bbdd para extraer las credenciales
@@ -453,10 +516,6 @@ class KubernetesBBDDController extends Controller
         $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
 
         exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/postgres-backup.py" '.$bbdd_projects->domain." ".$bbdd_projects->name." ".$bbdd_projects->dbuser." ".$bbdd_projects->dbname);
-        //$ruta=exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/TEST.py');
-
-
-        //$file= public_path(). "/download/info.pdf";
 
         $headers = array(
                   'Content-Type: application/sql',

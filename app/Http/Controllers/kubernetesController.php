@@ -21,6 +21,17 @@ class kubernetesController extends Controller
         $this->middleware('auth:api');
     }
 
+    /**
+     * Este método recibe como parámetros los campos necesarios para cregistrar
+     * un cluster: dominio, descripción, nombre o tipo; Igualmente solo puede
+     * ser ejecutado por administradores. Con esos campos primeramente verifica
+     * si hay un cluster existente que haya sido borrado y de ser así lo actualiza
+     * para activarlo de nuevo. Si se trata de uno no registrado previamente, antes
+     * de añadirlo verifica que en la ruta que se ha indicado existe un cluster
+     * manejado con EasyKube haciendo una petición al subdominio /info.
+     * Si dicha petición devuelve la información esperada, se crea y añade el cluster
+     * al grupo de trabajo del usuario que ha iniciado la petición para añadirlo.
+     */
     public function add_cluster(Request $request)
     {
         try {
@@ -53,8 +64,6 @@ class kubernetesController extends Controller
                 'status'=>'validated',
             ]);
         }
-
-
 
         if($user->admin==1){
             //Primero recoger la ip del endpoint
@@ -96,6 +105,12 @@ class kubernetesController extends Controller
         }
     }
 
+    /**
+     * Este método solo puede ser ejecutado por administradores. A partir del id
+     * de un cluster registrado en la plataforma, permite marcarlo como no activo
+     * en la base de datos de la aplicación para así dejar de monitorizar o gestionar
+     * sus cargas de trabajo
+     */
     public function delete_cluster(Request $request)
     {
 
@@ -117,7 +132,10 @@ class kubernetesController extends Controller
         ]);
         }
     }
-
+/**
+ * Este método devuelve los clusters que está manejando el grupo de trabajo
+ * al que pertenece el usuario que ha realizado dicha petición.
+ */
     public function get_clusters(Request $request)
     {
         $user = auth('api')->user();
@@ -129,6 +147,17 @@ class kubernetesController extends Controller
         return $query;
     }
 
+    /**
+     * Este método llama al método del EasyKube Controlplane instalado sobre cada
+     * uno de los clusters que maneja el grupo de trabajo del usuario que ha hecho
+     * la petición.
+     * Esa serie de llamadas devuelve las cargas de trabajo y salud de aquellas que
+     * se están ejecutando en cada cluster.
+     * Posteriormente compara cada una de esas cargas de trabajo para ver si
+     * pertenecen a un proyecto gestionado por la plataforma y de ser así le añade
+     * el identificador del proyecto correspondiente. Si no es una carga de trabajo
+     * gestionada por la plataforma, no añade ningún identificador.
+     */
     public function get_health(Request $request)
     {
         $clusters = $this->get_clusters($request);
@@ -177,11 +206,9 @@ class kubernetesController extends Controller
                 ->where('active', 1)
                 ->first();
 
-
-
-                //!!!!!!!!VERIFICAR AQUI SI ES UN PROYECTO DE BBDD O FLASK DE LA TABLA QUE CREE EN SU MOMENTO IGUAL QUE ARRIBA
-
+                //Verificar que tipo de proyecto es a continuación
                 if($nombre=="easykube-controlplane"){
+                    // Si es el despliegue del controlplane se recoge aquí
                     $temp->from_app = True;
                 }
                 else if ($query === null && $esbbdd === null && $espython === null) {
@@ -211,13 +238,16 @@ class kubernetesController extends Controller
                 $flag=$flag+1;
 
             }
-
-
         }
-
         return json_decode(json_encode($escritura), true);
     }
 
+    /**
+     * Este método permite a un usuario crear un ticket donde se solicita la
+     * creación de un proyecto web al igual que registra en la base de datos de la
+     * aplicación las características del proyecto web que solicita.
+     * También se crea un log de la realización de dicha solicitud.
+     */
     public function solicitar_web_project(Request $request)
     {
         $user = auth('api')->user();
@@ -261,14 +291,10 @@ class kubernetesController extends Controller
             'cluster_id'=>$cluster->id
         ]);
 
-
-
-
         //Ver cual es el id del proyecto que se acaba de crear
         $proyecto = web_project::where('name', '=', $request->name )->where('cluster_id', '=', $cluster->id )->first();
 
-
-
+        //Crear el ticket
         web_ticket::create([
             'action' => 0, //0 Crear //1 Replicas //2 Borrar
             'description' => "Create project ".$request->name,
@@ -277,24 +303,38 @@ class kubernetesController extends Controller
         ]);
 
         //Guardar el log del proyecto creado
-        $log = log::create([
+        log::create([
             'user_id' => $user->id,
             'description' => "Requested create web project '".$request->name."'",
         ]);
-
+        //Devolver el ok
         return response()->json([
             'status' => 'success',
         ]);
 
     }
     //NO SE UTILIZA. SOLO PARA DEBUG
+    /*
     public function ver_web_solicitados(Request $request)
     {
         $user = auth('api')->user();
         $query = web_project::where('aproved', '=', False )->where('workgroup_id', '=', $user->workgroup_id )->get();;
         return $query;
-    }
+    }*/
 
+    /**
+     * Este método recibe como parámetros en la solicitud el id del proyecto web
+     * que se desea crear. A continuación recupera toda la información que describe
+     * como debe crearse este proyecto  web. Para crear el proyecto ejecuta en orden
+     * los siguientes scripts Python:
+     * •	empty-secret.py
+     * •	issuer-prod.py o issuer-stagging.py (Según si el proyecto es o no de producción)
+     * •	create-web.py
+     * •	ingress-ssl.py
+     * Si existe un error en la ejecución de estos scripts, indica en cual se ha producido
+     * el error. SI no se produce ninguno devuelve “Successfull” y modifica la entrada
+     * en la base de datos del proyecto web para marcarlo como aprobado.
+     */
     public function deploy_web_project(int $web_project_id)
     {
         //Ver que proyecto es en la base de datos
@@ -307,10 +347,7 @@ class kubernetesController extends Controller
         if($query==null){
             return "ERROR";
         }
-
-
-
-        //Si llegamos aquí es que el proyect existe así que lo creamos
+        //Si llegamos aquí, es que el proyect existe, así que lo creamos
 
         //Primero recogemos la ip del cluster
         $cluster = cluster::where('workgroup_id', '=', $user->workgroup_id )
@@ -325,7 +362,7 @@ class kubernetesController extends Controller
         #Crear secreto
         $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/empty-secret.py" ' .$cluster_ip." ".$query->name);
 
-        //if($result!="b'Created'"){Return $result;}
+        //Verificar si se ha creado el secreto correctamente
         if($result!="b'Created'"){Return "Error creating secret";}
 
         #Crear issuer
@@ -346,15 +383,15 @@ class kubernetesController extends Controller
 
         #Crear HPA
         $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-hpa.py" ' . $cluster_ip." ".$query->name." ".$query->replicas);
-        #if($result!="b'Created'"){Return "Error creating hpa";}
+        //Verificar si se ha creado el autoescalado correctamente
         if($result!="b'Created'"){Return $result;}
 
         #Crear ingress
         $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/ingress-ssl.py" ' . $cluster_ip." ".$query->name." ".$query->ipname." ".$query->dns);
+        //Verficar si se ha creado correctamente el ingress
         if($result!="b'Created'"){Return "Error creating ingress";}
 
-
-        //Validar
+        //Validar en la base de datos
         DB::table('web_projects')
         ->where('id', $web_project_id)
         ->update(['aproved' => true]);
@@ -363,6 +400,10 @@ class kubernetesController extends Controller
         return "Successfull";
     }
 
+    /**
+     * Este método solo puede ser ejecutado por administradores y devuelve todos
+     * los tickets web que no han sido aprobados ni rechazados para el grupo de trabajo del usuario.
+     */
     public function get_web_tickets(Request $request)
     {
         $user = auth('api')->user();
@@ -382,6 +423,20 @@ class kubernetesController extends Controller
             ]);
         }
     }
+
+    /**
+     * Este método gestiona la funcionalidad de los tickets que son aceptados y solo puede ser
+     * ejecutado por un administrador.
+     * Los tickets tienen asociado un campo acción que indica que se debe hacer sobre el
+     * proyecto asociado al ticket:
+     * 0.	Crear proyecto: Se llama al método deploy_web_project antes descrito para que
+     * cree la carga de trabajo en un cluster.
+     * 1.	Modificar el número de réplicas del proyecto: Haciendo uso del script Python
+     * update-replicas.py, modifica el número de replicas de la carga de trabajo.
+     * 2.	Borrar el proyecto: Haciendo uso del script Python delete-project.py,
+     * se borran todos los objetos de Kubernetes del proyecto.
+     * ->En todos estos casos se crea un log registrando los cambios.
+     */
     public function accept_web_tickets(Request $request)
     {
         $user = auth('api')->user();
@@ -398,12 +453,12 @@ class kubernetesController extends Controller
         ->where('id', $request->web_ticket_id)
         ->first();
 
+        //Si el ticket no existe se devuelve el error
         if($web_ticket==null){
             return response()->json([
                 'status'=>"Web ticket dont exist",
             ]);
         }
-
 
         //Crear proyecto
         if($web_ticket->action==0){
@@ -426,7 +481,7 @@ class kubernetesController extends Controller
             ->update(['aproved' => true]);
 
             //Crear log
-            $log = log::create([
+            log::create([
                 'user_id' => $user->id,
                 'description' => "Ticket accepted: '".$web_ticket->description."'",
             ]);
@@ -440,7 +495,6 @@ class kubernetesController extends Controller
             ->where('id', '=', $web_ticket->web_project_id )
             ->first();
 
-
             //Sabiendo el proyecto sacamos el cluster en el que se ejecuta
             $cluster = cluster::where('workgroup_id', '=', $user->workgroup_id )
             ->where('id', '=', $web_project->cluster_id )
@@ -453,7 +507,9 @@ class kubernetesController extends Controller
             #Coger variables
             $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
             $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
+            //Ejecutar el script
             $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/update-replicas.py" '.$cluster_ip." ".$web_project->name." ".$web_ticket->replicas);
+            //Verificar que se ha ejecutado correctamente
             if($result!="b'success'"){
                 return response()->json([
                     'status'=>$result,
@@ -471,7 +527,7 @@ class kubernetesController extends Controller
             ->update(['replicas' => $web_ticket->replicas]);
 
             //Crear log
-            $log = log::create([
+            log::create([
                 'user_id' => $user->id,
                 'description' => "Ticket accepted: '".$web_ticket->description."'",
             ]);
@@ -490,9 +546,8 @@ class kubernetesController extends Controller
             ->where('id', '=', $web_project->cluster_id )
             ->first();
 
-            //Tenemos la dirección del cluster
+            //Recogemos la dirección del cluster
             $cluster_ip = $cluster->domain;
-
 
             //Ahora que sabemos que proyecto es
             $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
@@ -504,7 +559,7 @@ class kubernetesController extends Controller
                 ]);
             }
             //Crear log
-            $log = log::create([
+            log::create([
                 'user_id' => $user->id,
                 'description' => "Ticket accepted: '".$web_ticket->description."'",
             ]);
@@ -519,6 +574,16 @@ class kubernetesController extends Controller
         ]);
 
     }
+
+    /**
+     * Este método solo puede ser ejecutado por administradores y marca como
+     * rechazado el id del ticket que se pasa en la petición.
+     * En caso de que el ticket fuera para crear un proyecto web elimina la
+     * línea de la base de datos donde se describe como debería crearse el
+     * proyecto web. Esto se hace para que si en un futuro se desea crear un
+     * proyecto con esas mismas características no se reconozca como que ya
+     * existe y para evitar tener así múltiples proyectos con el mismo nombre.
+     */
     public function delete_web_tickets(Request $request)
     {
         $user = auth('api')->user();
@@ -534,6 +599,7 @@ class kubernetesController extends Controller
         ->where('id', $request->web_ticket_id)
         ->first();
 
+        //Si no existe el ticket se devuelve un error
         if($query==null){
             return response()->json([
                 'status'=>"Web ticket dont exist",
@@ -553,7 +619,7 @@ class kubernetesController extends Controller
             ->delete();
 
             //Crear log
-            $log = log::create([
+            log::create([
                 'user_id' => $user->id,
                 'description' => "Deleted ticket: '".$query->description."'",
             ]);
@@ -565,7 +631,7 @@ class kubernetesController extends Controller
             ->update(['declined' => true]);
 
             //Crear log
-            $log = log::create([
+            log::create([
                 'user_id' => $user->id,
                 'description' => "Deleted ticket: '".$query->description."'",
             ]);
@@ -574,6 +640,12 @@ class kubernetesController extends Controller
             'status'=>'success',
         ]);
     }
+
+    /**
+     * Este método recibe en la petición el id de un proyecto web y devuelve
+     * toda la información de dicho proyecto, así como el nombre del clúster
+     * en el que se está ejecutando.
+     */
     public function get_web_project(Request $request)
     {
         $query=web_project::select('web_projects.*' , 'clusters.name AS cluster_name')
@@ -583,7 +655,11 @@ class kubernetesController extends Controller
         return $query;
     }
 
-    //Esta función CREA UN TICKET para modificar el número de réplicas
+    /**
+     * Este método permite aplicar mediante la creación de un ticket para
+     * modificar el número de réplicas de un proyecto web. Este método
+     * crea así un ticket y un log con la petición que realiza el usuario.
+     */
     public function apply_update_web_replicas(Request $request)
     {
     $user = auth('api')->user();
@@ -605,6 +681,10 @@ class kubernetesController extends Controller
         'status'=>'success',
     ]);
     }
+    /**
+     * Al igual que el anterior, el método crea un ticket y un log con la
+     * petición para eliminar un proyecto web.
+     */
     public function apply_delete_web_project(Request $request)
     {
     $user = auth('api')->user();
@@ -620,34 +700,40 @@ class kubernetesController extends Controller
         'web_project_id' => $request->web_project_id,
     ]);
 
-    //Guardar el log del proyecto creado
-    $log = log::create([
+    //Guardar el log
+    log::create([
         'user_id' => $user->id,
         'description' => "Requested delete web project '".$web_project->name."'",
     ]);
+    //Devolver el ok
     return response()->json([
         'status'=>'success',
     ]);
     }
 
-
     /**
-     * Esta función solo recibe un dominio y el nombre del deployment a reiniciar
-     * SE LLAMA DESDE EL SIGUIENTE MÉTODO restart_web_pods()
+     * Esta función recibe un dominio y el nombre de un proyecto y haciendo uso de
+     * un script de Python llama al clúster para reiniciar los pods de dicho proyecto.
+     * Hace uso del método restart_web_pods()
      */
     public function restart_pods(string $domain,string $name)
     {
-
+        //Recoger las variables
         $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
         $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
 
+        //Ejecutar el script
         $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/restart-pods.py" '.$domain." ".$name);
 
+        //Verificar que se ha ejecutado correcatmente
         if($result!="b'success'"){
             return $result;
         }
 
+        //Recoger el usuario que ha realizado la petición
         $user = auth('api')->user();
+
+        //Crear el log
         log::create([
             'user_id' => $user->id,
             'description' => "Restarted ".$name." project pods",
@@ -655,6 +741,12 @@ class kubernetesController extends Controller
 
         return "ok";
     }
+
+    /**
+     * La función recibe el id de un proyecto web, busca la información del
+     * proyecto en la base de datos y haciendo uso de la función “restart_pods”
+     * con la información recuperada, reinicia los pods de dicho proyecto web.
+    */
     public function restart_web_pods(Request $request)
     {
         $user = auth('api')->user();
@@ -667,10 +759,10 @@ class kubernetesController extends Controller
         ->where('web_projects.workgroup_id', $user->workgroup_id)
         ->first();
 
-
         $result=$this->restart_pods($web_project->domain,$web_project->name); //Llamada a la función restart_pods
-
+        //Verificar que se ha ejecutado correctamente la función que ejecuta el script
         if($result!= "ok"){
+            //Si el resultado no es bueno, imprime el resultado del script
             return response()->json([
                 'status'=>$result,
                 ]);
@@ -682,8 +774,13 @@ class kubernetesController extends Controller
 
     }
 
+    /**
+     * La función recibe el id de un proyecto web, recupera su información de la base
+     * de datos y haciendo uso de la función “project_health” recupera la información
+     * de la salud de ese proyecto web.
+     * Hace uso de project_health()
+     */
 
-    //Esta función devuelve la salud de un proyecto web haciendo uso de project_health()
     public function web_project_health(Request $request)
     {
         $user = auth('api')->user();
@@ -697,25 +794,21 @@ class kubernetesController extends Controller
 
         return $this->project_health($web_project->domain, $web_project->name); //Llamada a la función project_health
     }
-    /*esta función llama al cluster de kubernetes para que le devuelva la salud de un poyecto en concreto
-    SE EMPLEA DESDE web_project_health()
+    /**
+     * Esta función llama al cluster de kubernetes para que le devuelva la salud de un poyecto en concreto
+     * Se usa desde web_project_health()
     */
     public function project_health(string $domain,string $name)
     {
-
+        //Recuperar las variables
         $RUTA_PYTHON='"'.env('RUTA_PYTHON').'"';
         $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
-
+        //Ejecutar el script
         $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/project-health.py" '.$domain." ".$name);
+        //Eliminar los caracteres que genera la petición que no con la respuesta
         $result = substr($result, 2);
         $result = substr($result, 0,-1);
-
+        //Imprimir la respuesta
         return $result;
     }
-
-
-
-
-
-
 }
