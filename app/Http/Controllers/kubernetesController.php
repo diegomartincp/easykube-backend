@@ -39,7 +39,7 @@ class kubernetesController extends Controller
                 'domain' => 'required|string',
                 'description' => 'required|string',
                 'name' => 'required|string',
-                'type' => 'required|string',
+                'provider' => 'required|string',
             ]);
         } catch (\Throwable $th) {
             return response()->json([
@@ -66,18 +66,22 @@ class kubernetesController extends Controller
         }
 
         if($user->admin==1){
+            $addr_port=$request->domain.':'.$request->port;
+
             //Primero recoger la ip del endpoint
-            $response = Http::get($request->domain.'/info');
+            $response = Http::get($addr_port.'/info');
             //Ahora hay que validarlo
             $result=preg_match("/EasyKube_v\d.\d+/", $response);
+
+
             if($result==1){
                 try {
                     cluster::create([
                         'workgroup_id' => $user->workgroup_id,
                         'name' => $request->name,
-                        'domain' => $request->domain,
+                        'domain' =>  $addr_port,    //Se almacena la dirección con el puerto
                         'description' => $request->description,
-                        'type' => $request->type,
+                        'provider' => $request->provider,
                     ]);
                     log::create([
                         'user_id' => $user->id,
@@ -94,7 +98,7 @@ class kubernetesController extends Controller
 
             }else{
                 return response()->json([
-                    'status'=>'Error',
+                    'status'=>$addr_port,
                 ]);
             }
         }
@@ -140,7 +144,6 @@ class kubernetesController extends Controller
     {
         $user = auth('api')->user();
         $query = DB::table('clusters')
-                ->select('id', 'name' ,'domain','type', 'description')
                 ->where('workgroup_id', $user->workgroup_id)
                 ->where('active', true)
                 ->get();

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('description');
-            $table->string('type');
+            $table->string('provider');
             $table->string('domain')->unique();;
             $table->boolean('active')->default(1);
             $table->integer('workgroup_id')->references('id')->on('workgroups');

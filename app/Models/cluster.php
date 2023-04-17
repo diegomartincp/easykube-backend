@@ -12,7 +12,7 @@ class cluster extends Model
     protected $fillable = [
         'name',
         'description',
-        'type',
+        'provider',
         'domain',
         'workgroup_id',
     ];
