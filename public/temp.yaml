@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ejemploerror-deployment
+  namespace: default
+  labels:
+    app: ejemploerror
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ejemploerror
+  template:
+    metadata:
+      labels:
+        app: ejemploerror
+    spec:
+      containers:
+      - name: ejemploerror-container
+        image: diegomartinc/ejemploerror-1:latest
+        ports:
+        - containerPort: 5000
+        #Caracterísicas para el autoescalado
+        resources:
+            limits:
+                cpu: 500m
+            requests:
+                cpu: 100m

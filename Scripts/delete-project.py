@@ -8,7 +8,7 @@ project_name = sys.argv[2]
 
 
 
-r = requests.get("http://"+url_ek_controlplane+"/delete_project?project="+project_name)
+r = requests.get(url_ek_controlplane+"/delete_project?project="+project_name)
 #print("http://"+url_ek_controlplane+"/delete_project?project="+project_name)
 print(r.content)
 

@@ -9,7 +9,7 @@ name = sys.argv[2]
 #url_ek_controlplane="localhost:81"
 #name="restartpooods"
 
-r = requests.get("http://"+url_ek_controlplane+"/get_project_health?name="+name)
+r = requests.get(url_ek_controlplane+"/get_project_health?name="+name)
 print(r.content)
 
 

@@ -35,7 +35,7 @@ with open('temp.yaml', 'w') as f:
 
 
 with open('temp.yaml', 'rb') as f:
-    r1 = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
+    r1 = requests.get(url_ek_controlplane+"/apply", files={"file": f})
 os.remove('temp.yaml')
 
 #-------------
@@ -61,7 +61,7 @@ with open('temp.yaml', 'w') as f:
 
 
 with open('temp.yaml', 'rb') as f:
-    r2 = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
+    r2 = requests.get(url_ek_controlplane+"/apply", files={"file": f})
 os.remove('temp.yaml')
 
 
@@ -86,7 +86,7 @@ with open('temp.yaml', 'w') as f:
 
 
 with open('temp.yaml', 'rb') as f:
-    r3 = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
+    r3 = requests.get(url_ek_controlplane+"/apply", files={"file": f})
 os.remove('temp.yaml')
 
 
@@ -112,7 +112,7 @@ with open('temp.yaml', 'w') as f:
 
 
 with open('temp.yaml', 'rb') as f:
-    r4 = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
+    r4 = requests.get(url_ek_controlplane+"/apply", files={"file": f})
 os.remove('temp.yaml')
 
 
@@ -137,7 +137,7 @@ with open('temp.yaml', 'w') as f:
 
 
 with open('temp.yaml', 'rb') as f:
-    r5 = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
+    r5 = requests.get(url_ek_controlplane+"/apply", files={"file": f})
 os.remove('temp.yaml')
 
 #Imprimir resultados
