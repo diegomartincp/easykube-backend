@@ -9,7 +9,7 @@ name = sys.argv[2]
 #url_ek_controlplane="localhost:81"
 #name="restartpooods"
 
-r = requests.get(url_ek_controlplane+"/reload_pods?name="+name)
+r = requests.get("http://"+url_ek_controlplane+"/reload_pods?name="+name)
 print(r.content)
 
 

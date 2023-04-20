@@ -43,7 +43,7 @@ with open('temp.yaml', 'w') as f:
 
 
 with open('temp.yaml', 'rb') as f:
-    r = requests.get(url_ek_controlplane+"/apply", files={"file": f})
+    r = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
     #print(r.content)
 
 
@@ -68,7 +68,7 @@ with open('temp.yaml', 'w') as f:
 
 
 with open('temp.yaml', 'rb') as f:
-    r2 = requests.get(url_ek_controlplane+"/apply", files={"file": f})
+    r2 = requests.get("http://"+url_ek_controlplane+"/apply", files={"file": f})
     print(r.content+r2.content)
 
 

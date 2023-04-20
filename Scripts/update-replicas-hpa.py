@@ -8,7 +8,7 @@ name = sys.argv[2]
 replicas = sys.argv[3]
 
 
-r = requests.get(url_ek_controlplane+"/update_hpa_replicas?name="+name+"-deployment&replicas="+replicas)
+r = requests.get("http://"+url_ek_controlplane+"/update_hpa_replicas?name="+name+"-deployment&replicas="+replicas)
 print(r.content)
 
 
