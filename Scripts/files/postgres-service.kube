@@ -8,6 +8,8 @@ metadata:
 spec:
   type: LoadBalancer # Sets the service type
   ports:
-    - port: 5432 # Sets the port to run the postgres application
+  - protocol: TCP
+    port: {{port}}
+    targetPort: 5432
   selector:
     app: {{name}}

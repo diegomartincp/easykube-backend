@@ -17,7 +17,7 @@ class bbdd_projects extends Model
         'dbpwd',
         'aproved',
         'provider',
-        'replicas',
+        'port',
         'workgroup_id',
         'cluster_id',
     ];

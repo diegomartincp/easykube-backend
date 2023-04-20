@@ -16,7 +16,6 @@ return new class extends Migration
         Schema::create('bbdd_tickets', function (Blueprint $table) {
             $table->id();
             $table->integer('action'); //0 Crear //1 Replicas //2 Borrar
-            $table->integer('replicas')->default(0);
             $table->string('description');
             $table->integer('user_id')->references('id')->on('users');
             $table->integer('bbdd_project_id')->references('id')->on('bbdd_projects');

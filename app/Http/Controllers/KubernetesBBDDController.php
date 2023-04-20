@@ -55,7 +55,7 @@ class KubernetesBBDDController extends Controller
             'dbuser'=>$request->dbuser,
             'dbpwd'=>$request->dbpwd,
             'aproved'=>False,
-            'replicas'=>$request->replicas,
+            'port'=>$request->port,
             'workgroup_id'=>$user->workgroup_id,
             'cluster_id'=>$cluster->id
         ]);
@@ -328,7 +328,7 @@ class KubernetesBBDDController extends Controller
         $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
 
         #Crear secreto
-        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-bbdd.py" ' .$query->domain." ".$query->name." ".$query->memory." ".$query->dbname." ".$query->dbuser." ".$query->dbpwd);
+        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-bbdd.py" ' .$query->domain." ".$query->name." ".$query->memory." ".$query->dbname." ".$query->dbuser." ".$query->dbpwd." ".$query->port);
         //return $RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-bbdd.py" ' .$query->domain." ".$query->name." ".$query->memory." ".$query->dbname." ".$query->dbuser." ".$query->dbpwd;
         //if($result!="b'Created'"){Return $result;}
         if($result!="b'CreatedCreatedCreatedCreatedCreated'"){Return $result;}
@@ -369,7 +369,7 @@ class KubernetesBBDDController extends Controller
         $RUTA_CARPETA_LARAVEL=env('RUTA_CARPETA_LARAVEL');
 
         #Crear secreto
-        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-bbdd-gke.py" ' .$query->domain." ".$query->name." ".$query->memory." ".$query->dbname." ".$query->dbuser." ".$query->dbpwd);
+        $result = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-bbdd-gke.py" ' .$query->domain." ".$query->name." ".$query->memory." ".$query->dbname." ".$query->dbuser." ".$query->dbpwd." ".$query->port);
         //return $RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/create-bbdd.py" ' .$query->domain." ".$query->name." ".$query->memory." ".$query->dbname." ".$query->dbuser." ".$query->dbpwd;
         //if($result!="b'Created'"){Return $result;}
         if($result!="b'CreatedCreatedCreatedCreatedCreated'"){Return $result;}

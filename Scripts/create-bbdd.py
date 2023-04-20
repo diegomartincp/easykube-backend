@@ -10,6 +10,8 @@ memory = sys.argv[3]
 db = sys.argv[4]
 user = sys.argv[5]
 pwd = sys.argv[6]
+port = sys.argv[7]
+
 
 
 
@@ -129,6 +131,7 @@ with open(in_file, 'r') as f:
 
 # Reemplazar la palabra deseada
 contenido = contenido.replace("{{name}}",name)
+contenido = contenido.replace("{{port}}",port)
 
 # Abrir el archivo de destino para escritura
 with open('temp.yaml', 'w') as f:
