@@ -54,7 +54,6 @@ class KubernetesBBDDController extends Controller
             'dbname'=>$request->dbname,
             'dbuser'=>$request->dbuser,
             'dbpwd'=>$request->dbpwd,
-            'provider'=>$request->provider,
             'aproved'=>False,
             'replicas'=>$request->replicas,
             'workgroup_id'=>$user->workgroup_id,
@@ -388,7 +387,7 @@ class KubernetesBBDDController extends Controller
     {
         $user = auth('api')->user();
         //recuperamos la entrada del proyecto
-        $query=bbdd_projects::select('bbdd_projects.*' , 'clusters.name AS cluster_name','clusters.domain')
+        $query=bbdd_projects::select('bbdd_projects.*' , 'clusters.name AS cluster_name','clusters.*')
         ->join('clusters', 'bbdd_projects.cluster_id', '=', 'clusters.id')
         ->where('bbdd_projects.id', '=', $request->bbdd_project_id)
         ->where('bbdd_projects.workgroup_id', '=', $user->workgroup_id)

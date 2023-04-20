@@ -46,19 +46,22 @@ class kubernetesController extends Controller
                 'Arguments missing',
             ]);
         }
+
+        $addr_port=$request->domain.':'.$request->port;
+
         //Primero comprobamos si el cluster ya existe y únicamente fue desactivado el seguimiento
         $user = auth('api')->user();
-        $existe = cluster::where('domain', $request->domain)
+        $existe = cluster::where('domain', $addr_port)
         ->where('workgroup_id', $user->workgroup_id)
         ->where('active', false)->first();
 
         //Si ya existia
         if($existe!=null){
-            cluster::where('domain', $request->domain)->where('workgroup_id', $user->workgroup_id)->update(['active' => true]);;
+            cluster::where('domain', $addr_port)->where('workgroup_id', $user->workgroup_id)->update(['active' => true]);;
                     //Guardar el log del proyecto creado
             log::create([
                 'user_id' => $user->id,
-                'description' => "Added agin cluster '".$existe->name."'",
+                'description' => "Added again cluster '".$existe->name."'",
             ]);
             return response()->json([
                 'status'=>'validated',
@@ -66,9 +69,7 @@ class kubernetesController extends Controller
         }
 
         if($user->admin==1){
-            $addr_port=$request->domain.':'.$request->port;
-
-            //Primero recoger la ip del endpoint
+                    //Primero recoger la ip del endpoint
             $response = Http::get($addr_port.'/info');
             //Ahora hay que validarlo
             $result=preg_match("/EasyKube_v\d.\d+/", $response);
