@@ -177,71 +177,76 @@ class kubernetesController extends Controller
         //Para cada cluster
         for ($i=0; $i < $elementCount; $i++) {
 
-            //Pedir todas sus cargas de trabajo
-            $response = Http::get($clusters[$i]->domain.'/get_pods_health');
+            try {
+                //Pedir todas sus cargas de trabajo
+                $response = Http::get($clusters[$i]->domain.'/get_pods_health');
 
-            //Para cada carga de trabajo del cluster i
-            foreach(json_decode(str($response)) as $deployment){
-                $temp = new stdClass();
-                $temp->Name = $deployment->Name;
-                $temp->Replicas = $deployment->Replicas;
-                $temp->Avalaibable = $deployment->Avalaibable;
-                $temp->cluster_id = $clusters[$i]->id;
+                //Para cada carga de trabajo del cluster i
+                foreach(json_decode(str($response)) as $deployment){
+                    $temp = new stdClass();
+                    $temp->Name = $deployment->Name;
+                    $temp->Replicas = $deployment->Replicas;
+                    $temp->Avalaibable = $deployment->Avalaibable;
+                    $temp->cluster_id = $clusters[$i]->id;
 
-                //Verificar si la carga de trabajo es un proyecto web
-                $nombre = explode("-deployment", $deployment->Name)[0];
-                $query = web_project::where('web_projects.name', '=', $nombre )
-                ->select('clusters.*', 'web_projects.*')
-                ->join('clusters', 'web_projects.cluster_id', '=', 'clusters.id')
-                ->where('active', 1)
-                ->first();
+                    //Verificar si la carga de trabajo es un proyecto web
+                    $nombre = explode("-deployment", $deployment->Name)[0];
+                    $query = web_project::where('web_projects.name', '=', $nombre )
+                    ->select('clusters.*', 'web_projects.*')
+                    ->join('clusters', 'web_projects.cluster_id', '=', 'clusters.id')
+                    ->where('active', 1)
+                    ->first();
 
-                //Verificar si es proyecto bbdd
-                $esbbdd = bbdd_projects::where('bbdd_projects.name', '=', $nombre )
-                ->select('clusters.*', 'bbdd_projects.*')
-                ->join('clusters', 'bbdd_projects.cluster_id', '=', 'clusters.id')
-                ->where('active', 1)
-                ->first();
+                    //Verificar si es proyecto bbdd
+                    $esbbdd = bbdd_projects::where('bbdd_projects.name', '=', $nombre )
+                    ->select('clusters.*', 'bbdd_projects.*')
+                    ->join('clusters', 'bbdd_projects.cluster_id', '=', 'clusters.id')
+                    ->where('active', 1)
+                    ->first();
 
-                //Verificar si es proyecto python
-                $espython = python_project::where('python_projects.name', '=', $nombre )
-                ->select('clusters.*', 'python_projects.*')
-                ->join('clusters', 'python_projects.cluster_id', '=', 'clusters.id')
-                ->where('active', 1)
-                ->first();
+                    //Verificar si es proyecto python
+                    $espython = python_project::where('python_projects.name', '=', $nombre )
+                    ->select('clusters.*', 'python_projects.*')
+                    ->join('clusters', 'python_projects.cluster_id', '=', 'clusters.id')
+                    ->where('active', 1)
+                    ->first();
 
-                //Verificar que tipo de proyecto es a continuación
-                if($nombre=="easykube-controlplane"){
-                    // Si es el despliegue del controlplane se recoge aquí
-                    $temp->from_app = True;
+                    //Verificar que tipo de proyecto es a continuación
+                    if($nombre=="easykube-controlplane"){
+                        // Si es el despliegue del controlplane se recoge aquí
+                        $temp->from_app = True;
+                    }
+                    else if ($query === null && $esbbdd === null && $espython === null) {
+                        //No es una carga de trabajo de easykube
+                        $temp->from_app = False;
+                    }
+                    else if($query !== null){
+                        //Si es carga web
+                        $temp->from_app = True;
+                        $temp->web_project_id = $query->id;
+                        $temp->query = $query;
+                    }
+                    else if($esbbdd !== null){
+                        //Si es carga de base de datos
+                        $temp->from_app = True;
+                        $temp->bbdd_project_id = $esbbdd->id;
+                        $temp->esbbdd = $esbbdd;
+                    }
+                    else if($espython !== null){
+                        //Si es carga de python
+                        $temp->from_app = True;
+                        $temp->python_project_id = $espython->id;
+                        $temp->espython = $espython;
+                    }
+
+                    $escritura->$flag = $temp;
+                    $flag=$flag+1;
+
                 }
-                else if ($query === null && $esbbdd === null && $espython === null) {
-                    //No es una carga de trabajo de easykube
-                    $temp->from_app = False;
-                }
-                else if($query !== null){
-                    //Si es carga web
-                    $temp->from_app = True;
-                    $temp->web_project_id = $query->id;
-                    $temp->query = $query;
-                }
-                else if($esbbdd !== null){
-                    //Si es carga de base de datos
-                    $temp->from_app = True;
-                    $temp->bbdd_project_id = $esbbdd->id;
-                    $temp->esbbdd = $esbbdd;
-                }
-                else if($espython !== null){
-                    //Si es carga de python
-                    $temp->from_app = True;
-                    $temp->python_project_id = $espython->id;
-                    $temp->espython = $espython;
-                }
-
-                $escritura->$flag = $temp;
-                $flag=$flag+1;
-
+            } catch (\Throwable $th) {
+                //No se devuelve nada de ese clúster y se pasa al siguiente
             }
+
         }
         return json_decode(json_encode($escritura), true);
     }
