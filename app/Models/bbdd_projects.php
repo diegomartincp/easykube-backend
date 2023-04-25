@@ -20,6 +20,7 @@ class bbdd_projects extends Model
         'port',
         'workgroup_id',
         'cluster_id',
+        'deleted'
     ];
 
 }

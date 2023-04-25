@@ -39,7 +39,10 @@ class KubernetesPythonController extends Controller
     }
 
     //2 Vemos si el proyecto ya existe
-    $query = python_project::where('name', '=', $request->get('name') )->where('cluster_id', '=', $cluster->id )->first();
+    $query = python_project::where('name', '=', $request->get('name') )
+    ->where('cluster_id', '=', $cluster->id )
+    ->where('deleted', '=', 0 )
+    ->first();
 
     if($query!=null){
         //Si existe se devuelve el error
@@ -194,7 +197,7 @@ class KubernetesPythonController extends Controller
             python_ticket::where('id', $request->python_ticket_id)
             ->update(['accepted' => true]);
 
-            //Actualizar el web project
+            //Actualizar el proyecto a aprovado
             python_project::where('id', $python_ticket->python_project_id)
             ->update(['aproved' => true]);
 
@@ -263,6 +266,11 @@ class KubernetesPythonController extends Controller
             //Actualizar la peticion
             python_ticket::where('id', $request->python_ticket_id)
             ->update(['accepted' => true]);
+
+            //Actualizar el proyecto como borrado
+            python_project::where('id', $python_ticket->python_project_id)
+            ->update(['deleted' => true]);
+
         }
 
         //ACTION 3 - Actualizar la imagen del miscroservicio

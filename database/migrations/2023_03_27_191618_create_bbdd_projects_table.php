@@ -26,6 +26,7 @@ return new class extends Migration
             $table->integer('cluster_id')->references('id')->on('cluster');
             $table->integer('workgroup_id')->references('id')->on('workgroups');
             $table->boolean('aproved')->default(0);
+            $table->boolean('deleted')->default(0);
             $table->timestamps();
         });
 

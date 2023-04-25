@@ -20,6 +20,7 @@ class web_project extends Model
         'dns',
         'workgroup_id',
         'cluster_id',
-        'replicas'
+        'replicas',
+        'deleted'
     ];
 }

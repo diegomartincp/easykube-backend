@@ -194,21 +194,24 @@ class kubernetesController extends Controller
                     $query = web_project::where('web_projects.name', '=', $nombre )
                     ->select('clusters.*', 'web_projects.*')
                     ->join('clusters', 'web_projects.cluster_id', '=', 'clusters.id')
-                    ->where('active', 1)
+                    ->where('aproved', 1)
+                    ->where('deleted', 0)
                     ->first();
 
                     //Verificar si es proyecto bbdd
                     $esbbdd = bbdd_projects::where('bbdd_projects.name', '=', $nombre )
                     ->select('clusters.*', 'bbdd_projects.*')
                     ->join('clusters', 'bbdd_projects.cluster_id', '=', 'clusters.id')
-                    ->where('active', 1)
+                    ->where('aproved', 1)
+                    ->where('deleted', 0)
                     ->first();
 
                     //Verificar si es proyecto python
                     $espython = python_project::where('python_projects.name', '=', $nombre )
                     ->select('clusters.*', 'python_projects.*')
                     ->join('clusters', 'python_projects.cluster_id', '=', 'clusters.id')
-                    ->where('active', 1)
+                    ->where('aproved', 1)
+                    ->where('deleted', 0)
                     ->first();
 
                     //Verificar que tipo de proyecto es a continuación
@@ -576,6 +579,11 @@ class kubernetesController extends Controller
             DB::table('web_tickets')
             ->where('id', $request->web_ticket_id)
             ->update(['accepted' => true]);
+
+            //Actualizar proyecto como borrado
+            $web_project = web_project::where('workgroup_id', '=', $user->workgroup_id )
+            ->where('id', '=', $web_ticket->web_project_id )
+            ->update(['deleted' => 1]);
 
         }
         return response()->json([

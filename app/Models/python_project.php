@@ -17,5 +17,6 @@ class python_project extends Model
         'port',
         'workgroup_id',
         'cluster_id',
+        'deleted'
     ];
 }
