@@ -297,6 +297,10 @@ class KubernetesBBDDController extends Controller
             bbdd_tickets::where('id', $request->bbdd_ticket_id)
             ->update(['accepted' => true]);
 
+            //Actualizar proyecto como borrado
+            bbdd_projects::where('bbdd_projects.id', '=', $bbdd_ticket->bbdd_project_id)
+            ->update(['deleted' => 1]);
+
         }
         return response()->json([
             'status'=>'success',
