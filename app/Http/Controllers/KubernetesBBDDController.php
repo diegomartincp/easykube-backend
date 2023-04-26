@@ -38,7 +38,10 @@ class KubernetesBBDDController extends Controller
         }
 
         //Vemos si el proyecto ya existe
-        $query = bbdd_projects::where('name', '=', $request->name )->where('cluster_id', '=', $cluster->id )->first();
+        $query = bbdd_projects::where('name', '=', $request->name )
+        ->where('cluster_id', '=', $cluster->id )
+        ->where('deleted', '=', 0 )
+        ->first();
 
         if($query!=null){
             return response()->json([
@@ -47,7 +50,7 @@ class KubernetesBBDDController extends Controller
         }
 
         #AÑADIR EN BBDD
-        bbdd_projects::create([
+        $proyecto = bbdd_projects::create([
             'name'=>$request->name,
             'description'=>$request->description,
             'memory'=>$request->memory,
@@ -59,9 +62,6 @@ class KubernetesBBDDController extends Controller
             'workgroup_id'=>$user->workgroup_id,
             'cluster_id'=>$cluster->id
         ]);
-
-        //Ver cual es el id del proyecto que se acaba de crear
-        $proyecto = bbdd_projects::where('name', '=', $request->name )->where('cluster_id', '=', $cluster->id )->first();
 
         bbdd_tickets::create([
             'action' => 0, //0 Crear //1 Replicas //2 Borrar
@@ -199,7 +199,8 @@ class KubernetesBBDDController extends Controller
         }
 
         //recogemos el proyecto y el cluster
-        $bbdd_projects = bbdd_projects::select("bbdd_projects.*","clusters.domain")->where('bbdd_projects.id',"=", $bbdd_ticket->bbdd_project_id)
+        $bbdd_projects = bbdd_projects::select("bbdd_projects.*","clusters.domain","clusters.provider")
+        ->where('bbdd_projects.id',"=", $bbdd_ticket->bbdd_project_id)
         ->join("clusters","bbdd_projects.cluster_id","clusters.id")->first();
 
         //Crear proyecto
@@ -299,7 +300,7 @@ class KubernetesBBDDController extends Controller
 
             //Actualizar proyecto como borrado
             bbdd_projects::where('bbdd_projects.id', '=', $bbdd_ticket->bbdd_project_id)
-            ->update(['deleted' => true]);
+            ->update(['deleted' => 1]);
 
         }
         return response()->json([
@@ -391,7 +392,7 @@ class KubernetesBBDDController extends Controller
     {
         $user = auth('api')->user();
         //recuperamos la entrada del proyecto
-        $query=bbdd_projects::select('bbdd_projects.*' , 'clusters.name AS cluster_name', 'clusters.domain')
+        $query=bbdd_projects::select('bbdd_projects.*' , 'clusters.name AS cluster_name', 'clusters.domain','clusters.provider')
         ->join('clusters', 'bbdd_projects.cluster_id', '=', 'clusters.id')
         ->where('bbdd_projects.id', '=', $request->bbdd_project_id)
         ->where('bbdd_projects.workgroup_id', '=', $user->workgroup_id)
@@ -406,14 +407,21 @@ class KubernetesBBDDController extends Controller
             $ip = exec($RUTA_PYTHON.' '.'"'.$RUTA_CARPETA_LARAVEL.'/Scripts/get-services-ip.py" '. $query->domain." ". $query->name);
             $ip = substr($ip, 2);
             $ip = substr($ip, 0,-1);
-            //Actualizamos la IP
-            $query=bbdd_projects::where('bbdd_projects.id', '=', $request->bbdd_project_id)->update(['ip' => $ip]);
 
-            //Volvemos a generar la llamada con la IP actualizada
-            $query=bbdd_projects::select('bbdd_projects.*' , 'clusters.name AS cluster_name','clusters.domain')
-            ->join('clusters', 'bbdd_projects.cluster_id', '=', 'clusters.id')
-            ->where('bbdd_projects.id', '=', $request->bbdd_project_id)
-            ->first();
+            if(strlen($ip)<25){
+                //Actualizamos la IP
+                $query=bbdd_projects::where('bbdd_projects.id', '=', $request->bbdd_project_id)->update(['ip' => $ip]);
+
+                //Volvemos a generar la llamada con la IP actualizada
+                $query=bbdd_projects::select('bbdd_projects.*' , 'clusters.name AS cluster_name','clusters.domain')
+                ->join('clusters', 'bbdd_projects.cluster_id', '=', 'clusters.id')
+                ->where('bbdd_projects.id', '=', $request->bbdd_project_id)
+                ->first();
+            }
+            else{
+                //Ha devuelto un error por que no se ha asignado la IP
+            }
+
         }
 
 

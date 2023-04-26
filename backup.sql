@@ -16,6 +16,48 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: dadawwwwww; Type: TABLE; Schema: public; Owner: dadada
+--
+
+CREATE TABLE public.dadawwwwww (
+);
+
+
+ALTER TABLE public.dadawwwwww OWNER TO dadada;
+
+--
+-- Name: dadwccaw; Type: TABLE; Schema: public; Owner: dadada
+--
+
+CREATE TABLE public.dadwccaw (
+    dwww bigint,
+    wwwww aclitem[]
+);
+
+
+ALTER TABLE public.dadwccaw OWNER TO dadada;
+
+--
+-- Data for Name: dadawwwwww; Type: TABLE DATA; Schema: public; Owner: dadada
+--
+
+COPY public.dadawwwwww  FROM stdin;
+\.
+
+
+--
+-- Data for Name: dadwccaw; Type: TABLE DATA; Schema: public; Owner: dadada
+--
+
+COPY public.dadwccaw (dwww, wwwww) FROM stdin;
+\.
+
+
 --
 -- PostgreSQL database dump complete
 --
