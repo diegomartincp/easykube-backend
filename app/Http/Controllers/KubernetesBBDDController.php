@@ -299,7 +299,7 @@ class KubernetesBBDDController extends Controller
 
             //Actualizar proyecto como borrado
             bbdd_projects::where('bbdd_projects.id', '=', $bbdd_ticket->bbdd_project_id)
-            ->update(['deleted' => 1]);
+            ->update(['deleted' => true]);
 
         }
         return response()->json([
@@ -391,7 +391,7 @@ class KubernetesBBDDController extends Controller
     {
         $user = auth('api')->user();
         //recuperamos la entrada del proyecto
-        $query=bbdd_projects::select('bbdd_projects.*' , 'clusters.name AS cluster_name','clusters.*')
+        $query=bbdd_projects::select('bbdd_projects.*' , 'clusters.name AS cluster_name', 'clusters.domain')
         ->join('clusters', 'bbdd_projects.cluster_id', '=', 'clusters.id')
         ->where('bbdd_projects.id', '=', $request->bbdd_project_id)
         ->where('bbdd_projects.workgroup_id', '=', $user->workgroup_id)
