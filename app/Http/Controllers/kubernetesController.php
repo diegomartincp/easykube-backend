@@ -277,7 +277,10 @@ class kubernetesController extends Controller
         }
 
         //Vemos si el proyecto ya existe
-        $query = web_project::where('name', '=', $request->name )->where('cluster_id', '=', $cluster->id )->first();
+        $query = web_project::where('name', '=', $request->name )
+        ->where('cluster_id', '=', $cluster->id )
+        ->where('deleted', '=', 0 )
+        ->first();
 
         if($query!=null){
             return response()->json([
@@ -287,7 +290,7 @@ class kubernetesController extends Controller
 
 
         #AÑADIR EN BBDD
-        web_project::create([
+        $proyecto = web_project::create([
             'name'=>$request->name,
             'description'=>$request->description,
             'email'=>$request->email,
@@ -303,8 +306,6 @@ class kubernetesController extends Controller
             'cluster_id'=>$cluster->id
         ]);
 
-        //Ver cual es el id del proyecto que se acaba de crear
-        $proyecto = web_project::where('name', '=', $request->name )->where('cluster_id', '=', $cluster->id )->first();
 
         //Crear el ticket
         web_ticket::create([
