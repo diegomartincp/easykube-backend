@@ -229,11 +229,6 @@ class KubernetesBBDDController extends Controller
             bbdd_projects::where('id', $bbdd_ticket->bbdd_project_id)
             ->update(['aproved' => true]);
 
-            //Si el proyecto es on-premises, cambiamos la IP del proyecto a Localhost
-            if($bbdd_projects->provider=="On-premises"){
-               bbdd_projects::where('bbdd_projects.id', '=', $request->bbdd_project_id)->update(['ip' => 'Localhost']);
-            }
-
             //Crear log
             log::create([
                 'user_id' => $user->id,

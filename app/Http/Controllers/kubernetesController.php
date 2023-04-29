@@ -52,6 +52,7 @@ class kubernetesController extends Controller
         //Primero comprobamos si el cluster ya existe y únicamente fue desactivado el seguimiento
         $user = auth('api')->user();
         $existe = cluster::where('domain', $addr_port)
+        ->where('name', $request->name)
         ->where('workgroup_id', $user->workgroup_id)
         ->where('active', false)->first();
 
