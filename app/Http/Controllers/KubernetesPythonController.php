@@ -505,7 +505,7 @@ class KubernetesPythonController extends Controller
             $ticket_creado=python_ticket::create([
                 'action' => 3, //0 Crear //1 Replicas //2 Borrar //3 Actualizar imagen
                 'replicas' => 0,
-                'description' => "Update python sript to new version for project '".$python_project->name."'",
+                'description' => "Update python script to new version for project '".$python_project->name."'",
                 'user_id' => $user->id,
                 'python_project_id' => $request->python_project_id,
             ]);
