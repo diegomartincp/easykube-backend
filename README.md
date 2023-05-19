@@ -1,3 +1,13 @@
+# EasyKube Back-End
+> Click [here](https://github.com/diegomartincp/easykube-front) to go to the EasyKube front-end repository
+
+EasyKube is a platform composed of a Python image that is installed in a Kubernetes cluster, and a web application, which allows automating the deployment of some of the main workloads that are usually deployed using the technology of Kubernetes: Web pages, databases and microservices, as well as being able to monitor and manage these workloads in a simple, secure and agile way.
+This development, thanks to the advantages that the use of Kubernetes implies, also makes it possible to manage the necessary infrastructure for these deployments with a fixed price, which implies savings for those who use it in contrast to paying for several different servers or web hosting services for the same purpose, having everything in one place.
+This platform seeks to bring this technology closer to those who do not know how to use it or are new to it, because due to its high complexity, whoever does it is highly likely to make a missconfiguration, have security errors in their workloads, or in their defect, rule out making use of it, thus losing the advantages it offers. Using EasyKube it is not necessary to worry about these problems since all the deployments and their management are carried out automatically by the platform, thus ensuring its safe and correct operation.
+All of these benefits can be leveraged on Google Kubernetes Engine or on-premises Kubernetes clusters.
+
+Keywords: Kubernetes, Google Kubernetes Engine, Cloud computing, Platform as a service, Digital transformation, Automated deployment
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
