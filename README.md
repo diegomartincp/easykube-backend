@@ -1,5 +1,5 @@
 # EasyKube Back-End
-> Click [here](https://github.com/diegomartincp/easykube-front) to go to the EasyKube front-end repository
+> Click [here](https://github.com/diegomartincp/easykube-frontend) to go to the EasyKube front-end repository
 
 > Click [here](https://github.com/diegomartincp/easykube-installation) to go to the EasyKube ControlPlane instalation repository
 
