@@ -9,7 +9,7 @@ spec:
     kind: Deployment
     name: {{name}}-deployment
   minReplicas: {{replicas}}
-  maxReplicas: 10
+  maxReplicas: 500
   metrics:
     - type: Resource
       resource:
