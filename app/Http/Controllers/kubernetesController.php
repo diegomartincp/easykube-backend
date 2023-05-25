@@ -197,6 +197,7 @@ class kubernetesController extends Controller
                     ->join('clusters', 'web_projects.cluster_id', '=', 'clusters.id')
                     ->where('aproved', 1)
                     ->where('deleted', 0)
+                    ->where('clusters.active', 1)
                     ->first();
 
                     //Verificar si es proyecto bbdd
@@ -205,6 +206,7 @@ class kubernetesController extends Controller
                     ->join('clusters', 'bbdd_projects.cluster_id', '=', 'clusters.id')
                     ->where('aproved', 1)
                     ->where('deleted', 0)
+                    ->where('clusters.active', 1)
                     ->first();
 
                     //Verificar si es proyecto python
@@ -213,6 +215,7 @@ class kubernetesController extends Controller
                     ->join('clusters', 'python_projects.cluster_id', '=', 'clusters.id')
                     ->where('aproved', 1)
                     ->where('deleted', 0)
+                    ->where('clusters.active', 1)
                     ->first();
 
                     //Verificar que tipo de proyecto es a continuación
