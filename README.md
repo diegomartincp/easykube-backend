@@ -1,4 +1,4 @@
-#### EasyKube Back-End
+#### ⚙️ EasyKube Back-End
 # What is EasyKube?
 EasyKube is a platform designed to simplify and automate application deployment in Kubernetes environments. It consists of a Python image installed in a Kubernetes cluster and a web application (accessible from both web and mobile) that enables the easy, secure, and agile management of key workloads like web pages, databases, and Python microservices. EasyKube is built for users with little or no Kubernetes experience, allowing anyone to benefit from container orchestration without the steep learning curve.
 
